@@ -155,7 +155,12 @@ class Minions(object):
         if self.cm_config.peering:
             peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, each_gloob, self.cm_config.cert_extension)
             certs += glob.glob(peer_gloob)
-            
+        
+        # if we can't match this gloob and the gloob is not REALLY a glob
+        # let the gloob be the hostname we try to connect to.
+        if not certs and not func_utils.re_glob(each_gloob):
+            tmp_hosts.add(each_gloob)
+        
         for cert in certs:
             tmp_certs.add(cert)
             # use basename to trim off any excess /'s, fix
@@ -290,7 +295,10 @@ class PuppetMinions(Minions):
             for line in fo.readlines():
                 if re.match('\s*(#|$)', line):
                     continue
-                (serial, before, after, cn) = line.split()
+                try:
+                    (serial, before, after, cn) = line.split()
+                except ValueError:
+                    continue
                 before = time.strftime('%s', time.strptime(before, time_format))
                 if now < int(before):
                     continue
@@ -314,8 +322,15 @@ class PuppetMinions(Minions):
                 pempath = '%s/%s.pem' % (self.overlord_config.puppet_signed_certs_dir, hostname)
                 if not os.path.exists(pempath):
                     continue
+                matched_gloob = False
                 if fnmatch.fnmatch(hostname, each_gloob):
+                    matched_gloob = True
                     tmp_hosts.add(hostname)
+                
+                # if we can't match this gloob and the gloob is not REALLY a glob
+                # let the gloob be the hostname we try to connect to.
+                if not matched_gloob and not func_utils.re_glob(each_gloob):
+                    tmp_hosts.add(each_gloob)
                     # don't return certs path - just hosts
 
         return tmp_hosts,tmp_certs
@@ -343,6 +358,7 @@ class PuppetMinions(Minions):
                 serial = int(serial, 16)
                 serials.append(serial)  
             return serials
+
 
 
 # does the hostnamegoo actually expand to anything?

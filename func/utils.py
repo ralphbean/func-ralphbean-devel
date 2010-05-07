@@ -165,9 +165,9 @@ def get_fresh_method_instance(function_ref):
         except Exception,e:
             #something went wrong so we return the normal reference value
             return function_ref
-       	try:
+        try:
             return getattr(fresh_instance,function_ref.__name__)
-	except AttributeError:
+        except AttributeError:
             return getattr(fresh_instance,function_ref._name_)
 
 def should_log(args):
@@ -209,6 +209,16 @@ def deep_base64(ds, mode = 0):
         return cleaned
 
     return ds
+
+_re_compiled_glob_match = None
+def re_glob(s):
+    """ Tests if a string is a shell wildcard. """
+    # TODO/FIXME maybe consider checking if it is a stringsType before going on - otherwise
+    # returning None
+    global _re_compiled_glob_match
+    if _re_compiled_glob_match is None:
+        _re_compiled_glob_match = re.compile('[*?]|\[.+\]').search
+    return _re_compiled_glob_match(s)
 
 #################### PROGRESS BAR ##################################
 # The code below can be used for progress bar purposes as we will do
