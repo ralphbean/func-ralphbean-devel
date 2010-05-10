@@ -14,7 +14,8 @@ import fnmatch
 import glob
 import os
 import sys
-
+import time
+import stat
 from func import logger
 
 
@@ -25,25 +26,49 @@ class Acls(object):
         self.config = config
         
         self.acldir = self.config.acl_dir
-        self.acls = {}
+        self._acl_glob = '%s/*.acl' % self.acldir
+        self._acls = {}
         self.logger = logger.Logger().logger
         self.certmaster_overrides_acls = self.config.certmaster_overrides_acls
+        self.last_load_time = 0
         self.load()
 
+    def _reload_acls(self):
+        """
+        return True if most recent timestamp of any of the acl files in the acl
+        dir is more recent than the last_load_time
+        """
+        
+        # if we removed or added a file - this will trigger a reload
+        if os.stat(self.acldir)[stat.ST_MTIME] > self.last_load_time:
+            return True
+        
+        # if we modified or added a file - this will trigger a reload
+        for fn in glob.glob(self._acl_glob):
+            if os.stat(fn)[stat.ST_MTIME] > self.last_load_time:
+                return True
+        
+        return False
+        
     def load(self): 
         """
         takes a dir of .acl files
         returns a dict of hostname+hash =  [methods, to, run]
         
         """
-    
+
         if not os.path.exists(self.acldir):
             sys.stderr.write('acl dir does not exist: %s\n' % self.acldir)
-            return self.acls
+            return self._acls
     
+        if not self._reload_acls():
+            return self._acls
+        
+        self.logger.debug("acl [re]loading")
+        self._acls = {} # nuking from orbit - just in case
+
         # get the set of files
-        acl_glob = '%s/*.acl' % self.acldir
-        files = glob.glob(acl_glob)
+        files = glob.glob(self._acl_glob)
     
         for acl_file in files:
             self.logger.debug("acl_file %s", acl_file)
@@ -62,30 +87,31 @@ class Acls(object):
                 methods = methods.strip()
                 methods = methods.replace(',',' ')
                 methods = methods.split()
-                if not self.acls.has_key(host):
-                    self.acls[host] = []
-                self.acls[host].extend(methods)
+                if not self._acls.has_key(host):
+                    self._acls[host] = []
+                self._acls[host].extend(methods)
 
-        self.logger.debug("acls %s" % self.acls)
+        self.logger.debug("acls %s" % self._acls)
+        
+        self.last_load_time = time.time()
+        return self._acls
 
-        return self.acls
+    acls = property(load)
 
     def check(self, cm_cert, cert, ip, method, params):
 
         # certmaster always gets to run things
         # unless we are testing, and need to turn it off.. -al;
-        
- 
         if self.config.certmaster_overrides_acls:
             ca_cn = cm_cert.get_subject().CN
             ca_hash = cm_cert.subject_name_hash()
             ca_key = '%s-%s' % (ca_cn, ca_hash)
-            self.acls[ca_key] = ['*']
+            self._acls[ca_key] = ['*', 'foo']
 
         cn = cert.get_subject().CN
         sub_hash = cert.subject_name_hash()
         self.logger.debug("cn: %s sub_hash: %s" % (cn, sub_hash))
-        self.logger.debug("acls %s" % self.acls)
+        self.logger.debug("current acls %s" % self.acls)
         if self.acls:
             allow_list = []
             hostkey = '%s-%s' % (cn, sub_hash)
