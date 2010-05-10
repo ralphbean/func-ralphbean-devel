@@ -14,6 +14,8 @@ import inspect
 import os
 import socket
 import string
+import sys
+import re
 
 from certmaster.config import read_config
 from certmaster.commonconfig import MinionConfig
@@ -225,7 +227,7 @@ def re_glob(s):
 #it is a combination of http://code.activestate.com/recipes/168639/ and
 #http://code.activestate.com/recipes/475116/ and recipes for usage
 #you can look at places we use it !
-import sys, re
+
 
 class TerminalController:
     """
