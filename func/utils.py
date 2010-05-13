@@ -177,29 +177,22 @@ def should_log(args):
         return True
     return False
 
-def deep_base64(ds, mode = 0):
+def deep_base64(ds):
     """
     Run through an arbitrary datastructure of dicts / lists / tuples
     to find all strings and base 64 encode/decode them with
     xmlrpclib.Binary objects.
-
-    mode 0 - flip, 1 - force decode, 2 - force encode
-
     """
     from xmlrpclib import Binary
 
     if isinstance(ds, Binary):
-        if mode == 2:
-             return ds
         return ds.data
 
     if isinstance(ds, basestring):
-        if mode == 1:
-             return ds
         return Binary(ds)
 
     if isinstance(ds, list) or isinstance(ds, tuple):
-        cleaned = map(lambda x: deep_base64(x,mode), ds)
+        cleaned = map(lambda x: deep_base64(x), ds)
         if isinstance(ds, tuple):
             cleaned = tuple(cleaned)
         return cleaned
@@ -207,7 +200,7 @@ def deep_base64(ds, mode = 0):
     if isinstance(ds, dict):
         cleaned = {}
         for k,v in ds.iteritems():
-            cleaned[deep_base64(k)] = deep_base64(v,mode)
+            cleaned[deep_base64(k)] = deep_base64(v)
         return cleaned
 
     return ds
