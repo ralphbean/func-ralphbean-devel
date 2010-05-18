@@ -31,7 +31,7 @@ class Yum(func_module.FuncModule):
         ayum.doRepoSetup()
         try:
             ayum.doLock()
-            if pkg in [None, '']:
+            if pkg not in [None, '']:
                 tx_result = ayum.update(pattern=pkg)
             else:
                 tx_result = ayum.update()
