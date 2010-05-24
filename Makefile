@@ -69,7 +69,7 @@ install_harder: clean_harder install
 install_hardest: clean_harder clean_rpms rpms install_rpm restart
 
 install_rpm:
-	-rpm -Uvh rpm-build/func-$(VERSION)-$(RELEASE)$(shell rpm -E "%{?dist}").noarch.rpm
+	-rpm -Uvh rpm-build/func-$(VERSION)-$(NEWRELEASE)$(shell rpm -E "%{?dist}").noarch.rpm
 
 restart:
 	-/etc/init.d/certmaster restart
