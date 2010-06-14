@@ -145,7 +145,7 @@ class XmlRpcInterface(object):
             method_module = string.join(method_bits[:-1], '.')
             method_name = method_bits[-1]
             if method_module in inventory:
-                inventory[module_module].append(method_name)
+                inventory[method_module].append(method_name)
 
         return inventory
 

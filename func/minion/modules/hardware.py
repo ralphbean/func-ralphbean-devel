@@ -60,7 +60,7 @@ class HardwareModule(func_module.FuncModule):
         return results
 
     def inventory(self):
-        data = hw_info(with_devices=True)
+        data = self.info()
         # remove bogomips because it keeps changing for laptops
         # and makes inventory tracking noisy
         if data.has_key("bogomips"):
