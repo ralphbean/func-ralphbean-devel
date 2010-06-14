@@ -43,6 +43,7 @@ class RpmModule(func_module.FuncModule):
                                                    release, arch))
             else:
                 results.append([name, epoch, version, release, arch])
+        results.sort()
         return results
 
     def grep(self, word):
@@ -56,8 +57,9 @@ class RpmModule(func_module.FuncModule):
         for res in inventory_res:
             if res.lower().find(word)!= -1:
                 results[self.inventory].append(res)
-        
+        results.sort()
         return results
+        
     grep = func_module.findout(grep)
 
     def verify(self, pattern='', flatten=True):
@@ -115,6 +117,7 @@ class RpmModule(func_module.FuncModule):
                                                        release, arch))
             else:
                 results.append([name, epoch, version, release, arch])
+        results.sort()
         return results
 
     def register_method_args(self):
