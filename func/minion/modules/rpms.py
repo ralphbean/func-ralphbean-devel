@@ -26,25 +26,7 @@ class RpmModule(func_module.FuncModule):
         software application, using flatten=False will prevent the need to 
         parse the returns.
         """
-        # I have not been able to get flatten=False to work if there 
-        # is more than 491 entries in the dict -- ashcrow
-        import rpm
-        ts = rpm.TransactionSet()
-        mi = ts.dbMatch()
-        results = []
-        for hdr in mi:
-            name = hdr['name']
-            epoch = (hdr['epoch'] or 0)
-            version = hdr['version']
-            release = hdr['release']
-            arch = hdr['arch']
-            if flatten:
-                results.append("%s %s %s %s %s" % (name, epoch, version, 
-                                                   release, arch))
-            else:
-                results.append([name, epoch, version, release, arch])
-        results.sort()
-        return results
+        return self.glob('', flatten)
 
     def grep(self, word):
         """
@@ -57,7 +39,6 @@ class RpmModule(func_module.FuncModule):
         for res in inventory_res:
             if res.lower().find(word)!= -1:
                 results[self.inventory].append(res)
-        results.sort()
         return results
         
     grep = func_module.findout(grep)
@@ -65,32 +46,21 @@ class RpmModule(func_module.FuncModule):
     def verify(self, pattern='', flatten=True):
         """
         Returns information on the verified package(s).
-        """        
-        import rpm
-        import yum
-        from re import split
-        ts = rpm.TransactionSet()
-        if pattern == '':
-            mi = ts.dbMatch()
-        else:
-            mi = self.glob(pattern)
+        """
         results = []
-        for hdr in mi:
-            if pattern == '':
-                name = hdr['name']
-            else:
-                name = split("\s",hdr)[0]
-                
-            if flatten:                
-                yb = yum.YumBase()
-                pkgs = yb.rpmdb.searchNevra(name)
-                for pkg in pkgs:
-                    errors = pkg.verify()
-                    for fn in errors.keys():
-                        for prob in errors[fn]:
-                            results.append('%s %s %s' % (name, fn, prob.message))
-            else:
-                results.append("%s-%s-%s.%s" % (name, version, release, arch))
+        for rpm in self.glob(pattern, False):
+            name = rpm[0]
+
+            yb = yum.YumBase()
+            pkgs = yb.rpmdb.searchNevra(name)
+            for pkg in pkgs:
+                errors = pkg.verify()
+                for fn in errors.keys():
+                    for prob in errors[fn]:
+                        if flatten:
+                             results.append('%s %s %s' % (name, fn, prob.message))
+                        else:
+                            results.append([name, fn, prob.message])
         return results
 
     def glob(self, pattern, flatten=True):
@@ -102,23 +72,26 @@ class RpmModule(func_module.FuncModule):
         mi = ts.dbMatch()
         results = []
         if not mi:
-            return
-        mi.pattern('name', rpm.RPMMIRE_GLOB, pattern)
+            return results
+        if (pattern != ''):
+            mi.pattern('name', rpm.RPMMIRE_GLOB, pattern)
         for hdr in mi:
             name = hdr['name']
+            # not all packages have an epoch
             epoch = (hdr['epoch'] or 0)
             version = hdr['version']
             release = hdr['release']
             # gpg-pubkeys have no arch
             arch = (hdr['arch'] or "")
-
             if flatten:
+                # flatten forms a simple text list separated by spaces
                 results.append("%s %s %s %s %s" % (name, epoch, version,
-                                                       release, arch))
+                                                   release, arch))
             else:
+                # Otherwise we return it as a list
                 results.append([name, epoch, version, release, arch])
-        results.sort()
         return results
+
 
     def register_method_args(self):
         """
