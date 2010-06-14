@@ -90,6 +90,7 @@ class RpmModule(func_module.FuncModule):
             else:
                 # Otherwise we return it as a list
                 results.append([name, epoch, version, release, arch])
+        results.sort()
         return results
 
 
