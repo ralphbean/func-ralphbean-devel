@@ -31,7 +31,7 @@ def __get_storage(dir):
     dir = os.path.expanduser(dir)
     if not os.path.exists(dir):
         os.makedirs(dir)
-    return tempfile.mktemp(suffix='', prefix='asynctmp', dir=dir)
+    return tempfile.mkstemp(suffix='', prefix='asynctmp', dir=dir)
 
 def __access_buckets(filename,clear,new_key=None,new_value=None):
     """
