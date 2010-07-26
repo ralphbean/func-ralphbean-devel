@@ -31,12 +31,28 @@ class Show(base_command.BaseCommand):
     def addOptions(self):
         self.parser.add_option("-v", "--verbose", dest="verbose",
                                action="store_true")
+        self.parser.add_option('-t', '--timeout', dest="timeout", type="float",
+                               help="Set default socket timeout in seconds")
+        self.parser.add_option('-e', '--exclude', dest="exclude",
+                               help="exclude some of minions",
+                               action="store",
+                               type="string")
+        self.parser.add_option('-c', '--conf', dest="conffile",
+                               help="specify an overlord.conf file for func to use")
 
     def handleOptions(self, options):
         self.options = options
 
         self.verbose = options.verbose
 
+        if options.timeout:
+            self.socket_timeout = options.timeout
+
+        if options.exclude:
+            self.exclude_spec = options.exclude
+
+        if options.conffile:
+            self.conffile = options.conffile
 
     def parse(self, argv):
         self.argv = argv
