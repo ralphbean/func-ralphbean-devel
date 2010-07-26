@@ -29,7 +29,7 @@ class SSL_Transport(xmlrpclib.Transport):
 class SSLXMLRPCServerProxy(xmlrpclib.ServerProxy):
     def __init__(self, uri, pkey_file, cert_file, ca_cert_file, timeout=None):
         self.ctx = SSLCommon.CreateSSLContext(pkey_file, cert_file, ca_cert_file)
-        xmlrpclib.ServerProxy.__init__(self, uri, SSL_Transport(ssl_context=self.ctx, timeout=timeout))
+        xmlrpclib.ServerProxy.__init__(self, uri, SSL_Transport(ssl_context=self.ctx, timeout=timeout), allow_none=True)
 
 
 class FuncServer(SSLXMLRPCServerProxy):
