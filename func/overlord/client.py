@@ -221,9 +221,8 @@ class Minions(object):
         results = []
         
         for host in hosts:
-            if host in self.downed_hosts:
+            if host in self.downed_hosts and self.verbose:
                 sys.stderr.write("%s excluded due to being listed in %s\n" % (host, self.overlord_config.host_down_list))
-                # FIXME maybe we should splat something to the logs?
                 continue
             if not self.just_fqdns:
                 host_res = "https://%s:%s" % (host, self.port)
