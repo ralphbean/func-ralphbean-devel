@@ -1,4 +1,3 @@
-## func command line interface & client lib
 ##
 ## Copyright 2007,2008 Red Hat, Inc
 ## Adrian Likins <alikins@redhat.com>
@@ -59,6 +58,7 @@ class ConfBackend(BaseBackend):
             for option in options:
                 if option == "host":
                     hosts = self.cp.get(section,option)
+                    hosts = hosts.replace(';',',')
                     hosts = hosts.split(",")
                     for h in hosts:
                         self.add_host_to_group(section,h,save=False)
