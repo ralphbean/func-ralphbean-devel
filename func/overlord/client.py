@@ -123,7 +123,7 @@ class Minions(object):
         return self.new_hosts
 
     def _get_group_hosts(self,spec):
-        return self.group_class.get_hosts_by_group_glob(spec)
+        return self.group_class.get_hosts_glob(spec)
 
     def _get_hosts_for_specs(self,seperate_gloobs):
         """
@@ -272,6 +272,10 @@ class PuppetMinions(Minions):
                  noglobs=None, verbose=None,
                  just_fqdns=False, groups_backend="conf",
                  delegate=False, minionmap={},exclude_spec=None,**kwargs):
+        # local host_inv cache
+        self._host_inv = {}
+        self._revoked_serials = []
+
         Minions.__init__(self, spec, port=port, noglobs=noglobs, verbose=verbose,
                         just_fqdns=just_fqdns, groups_backend=groups_backend,
                         delegate=delegate, minionmap=minionmap, 
@@ -284,80 +288,85 @@ class PuppetMinions(Minions):
         #these will be returned
         tmp_certs = set()
         tmp_hosts = set()
-        
-        # get all hosts
-        if os.access(self.overlord_config.puppet_inventory, os.R_OK):
-            fo = open(self.overlord_config.puppet_inventory, 'r')
-            host_inv = {}
-            time_format = '%Y-%m-%dT%H:%M:%S%Z'
-            now = time.time()
-            for line in fo.readlines():
-                if re.match('\s*(#|$)', line):
-                    continue
-                try:
-                    (serial, before, after, cn) = line.split()
-                except ValueError:
-                    continue
-                before = time.strftime('%s', time.strptime(before, time_format))
-                if now < int(before):
-                    continue
-                after = time.strftime('%s', time.strptime(after, time_format))
-                if now > int(after):
-                    continue
-
-                hn = cn.replace('/CN=','')
-                hn = hn.replace('\n','')
-                if hn in host_inv:
-                    if host_inv[hn] > serial:
+        if not self._host_inv:
+            # get all hosts
+            if os.access(self.overlord_config.puppet_inventory, os.R_OK):
+                fo = open(self.overlord_config.puppet_inventory, 'r')
+                host_inv = {}
+                time_format = '%Y-%m-%dT%H:%M:%S%Z'
+                now = time.time()
+                for line in fo.readlines():
+                    if re.match('\s*(#|$)', line):
                         continue
-                host_inv[hn] = serial
-            fo.close()
-            
-            # revoked certs
-            revoked_serials = self._return_revoked_serials(self.overlord_config.puppet_crl)
-            for hostname in host_inv.keys():
-                if int(host_inv[hostname], 16) in revoked_serials:
-                    continue
-                pempath = '%s/%s.pem' % (self.overlord_config.puppet_signed_certs_dir, hostname)
-                if not os.path.exists(pempath):
-                    continue
-                matched_gloob = False
-                if fnmatch.fnmatch(hostname, each_gloob):
-                    matched_gloob = True
-                    tmp_hosts.add(hostname)
+                    try:
+                        (serial, before, after, cn) = line.split()
+                    except ValueError:
+                        continue
+                    before = time.strftime('%s', time.strptime(before, time_format))
+                    if now < int(before):
+                        continue
+                    after = time.strftime('%s', time.strptime(after, time_format))
+                    if now > int(after):
+                        continue
+
+                    hn = cn.replace('/CN=','')
+                    hn = hn.replace('\n','')
+                    if hn in host_inv:
+                        if host_inv[hn] > serial:
+                            continue
+                    host_inv[hn] = serial
+                fo.close()
+                self._host_inv = host_inv # store ours
                 
-                # if we can't match this gloob and the gloob is not REALLY a glob
-                # let the gloob be the hostname we try to connect to.
-                if not matched_gloob and not func_utils.re_glob(each_gloob):
-                    tmp_hosts.add(each_gloob)
-                    # don't return certs path - just hosts
+        # revoked certs
+        self._return_revoked_serials(self.overlord_config.puppet_crl)
+        for hostname in self._host_inv.keys():
+            if int(self._host_inv[hostname], 16) in self._revoked_serials:
+                continue
+            pempath = '%s/%s.pem' % (self.overlord_config.puppet_signed_certs_dir, hostname)
+            if not os.path.exists(pempath):
+                continue
+            matched_gloob = False
+            if fnmatch.fnmatch(hostname, each_gloob):
+                matched_gloob = True
+                tmp_hosts.add(hostname)
+            
+            # if we can't match this gloob and the gloob is not REALLY a glob
+            # let the gloob be the hostname we try to connect to.
+            if not matched_gloob and not func_utils.re_glob(each_gloob):
+                tmp_hosts.add(each_gloob)
+                # don't return certs path - just hosts
 
         return tmp_hosts,tmp_certs
 
     def _return_revoked_serials(self, crlfile):
-        try:
-            serials = []
-            crltext = open(crlfile, 'r').read()
-            from OpenSSL import crypto
-            crl = crypto.load_crl(crypto.FILETYPE_PEM, crltext)
-            revs = crl.get_revoked()
-            for revoked in revs:
-                serials.append(str(revoked.get_serial()))
-            return serials
-        except (ImportError, AttributeError), e:
-            call = '/usr/bin/openssl crl -text -noout -in %s' % crlfile
-            call = shlex.split(call)
-            serials = []
-            (res,err) = subprocess.Popen(call, stdout=subprocess.PIPE).communicate()
-            for line in res.split('\n'):
-                if line.find('Serial Number:') == -1:
-                    continue
-                (crap, serial) = line.split(':')
-                serial = serial.strip()
-                serial = int(serial, 16)
-                serials.append(serial)  
-            return serials
+        if not self._revoked_serials:
 
+            serials = []
+            try:
+                crltext = open(crlfile, 'r').read()
+                from OpenSSL import crypto
+                crl = crypto.load_crl(crypto.FILETYPE_PEM, crltext)
+                revs = crl.get_revoked()
+                for revoked in revs:
+                    serials.append(str(revoked.get_serial()))
+
+            except (ImportError, AttributeError), e:
+                call = '/usr/bin/openssl crl -text -noout -in %s' % crlfile
+                call = shlex.split(call)
+                serials = []
+                (res,err) = subprocess.Popen(call, stdout=subprocess.PIPE).communicate()
+                for line in res.split('\n'):
+                    if line.find('Serial Number:') == -1:
+                        continue
+                    (crap, serial) = line.split(':')
+                    serial = serial.strip()
+                    serial = int(serial, 16)
+                    serials.append(serial)  
+        
+            self._revoked_serials = serials
+        
+        
 
 
 # does the hostnamegoo actually expand to anything?
