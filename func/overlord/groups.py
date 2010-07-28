@@ -94,9 +94,9 @@ class Groups(object):
         @param exclude_string :Glob string to be excluded you can
                             add something like "www*" easy and fast
         """
-        hoststring = self.get_hosts_spec(hoststring)
+        hoststring = self.get_hosts_for_spec(hoststring)
         if exclude_string :
-            e_s = self.get_hosts_spec(exclude_string)
+            e_s = self.get_hosts_for_spec(exclude_string)
             hoststring = hoststring.difference(e_s)
 
         #add them to backend
@@ -205,12 +205,12 @@ class Groups(object):
             #we seek for @group:ww* thing here
             if group_glob.find(":")!=-1:
                 group_str,host_str = group_glob.split(":")
-                hosts = self.get_hosts_spec(host_str)
+                hosts = self.get_hosts_for_spec(host_str)
                 #print "The hosts are ",hosts
                 include_host=include_host.union(set(self.get_hosts(pattern=hosts,group=group_str,exact=True)))
             else:
-                include_host=include_host.union(set(self.get_hosts(group=group_glob)))
-                #print "The include host is like ",include_host
+                for host_str in self.get_hosts(group=group_glob):
+                    include_host = include_host.union(set(self.get_hosts_for_spec(host_str)))
         
         return include_host
 
@@ -288,9 +288,9 @@ class Groups(object):
     
     def remove_host_glob(self,group_name,host_str,exclude_string=None):
         copy_host_str = host_str
-        host_str = self.get_hosts_spec(host_str)
+        host_str = self.get_hosts_for_spec(host_str)
         if exclude_string:
-            e_s = self.get_hosts_spec(exclude_string)
+            e_s = self.get_hosts_for_spec(exclude_string)
             host_str = host_str.difference(e_s)
 
         #remove the list completely
