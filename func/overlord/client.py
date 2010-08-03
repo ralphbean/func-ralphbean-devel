@@ -791,6 +791,7 @@ class Overlord(object):
         results = {}
         spec = ''
         minionurls = []
+        minion_hosts = []
         use_delegate = False
         delegation_path = []
 
