@@ -161,15 +161,18 @@ class Minions(object):
         # let the gloob be the hostname we try to connect to.
         if not certs and not func_utils.re_glob(each_gloob):
             found_by_alias = False
-            (fqdn, aliases, ips) = socket.gethostbyname_ex(each_gloob)
-
-            for name in [fqdn] + aliases:
-                actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, name, self.cm_config.cert_extension)
-                certs += glob.glob(actual_gloob)
-                if self.cm_config.peering:
-                    peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
-                    certs += glob.glob(peer_gloob)
-                    break
+            try:
+                (fqdn, aliases, ips) = socket.gethostbyname_ex(each_gloob)
+            except socket.gaierror, e:
+                pass
+            else:
+                for name in [fqdn] + aliases:
+                    actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, name, self.cm_config.cert_extension)
+                    certs += glob.glob(actual_gloob)
+                    if self.cm_config.peering:
+                        peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
+                        certs += glob.glob(peer_gloob)
+                        break
                     
             if not certs:
                 tmp_hosts.add(each_gloob)
@@ -349,13 +352,17 @@ class PuppetMinions(Minions):
             # or aliases matches _something_ we know about
             if not matched_gloob and not func_utils.re_glob(each_gloob):
                 found_by_alias = False
-                (fqdn, aliases, ips) = socket.gethostbyname_ex(each_gloob)
-                for name in [fqdn] + aliases:
-                    if name in self._host_inv and int(self._host_inv[name], 16) not in self._revoked_serials:
-                        if os.path.exists(self.overlord_config.puppet_signed_certs_dir + '/' + name + '.pem'):
-                            tmp_hosts.add(name)
-                            found_by_alias = True
-                            break
+                try:
+                    (fqdn, aliases, ips) = socket.gethostbyname_ex(each_gloob)
+                except socket.gaierror, e:
+                    pass
+                else:
+                    for name in [fqdn] + aliases:
+                        if name in self._host_inv and int(self._host_inv[name], 16) not in self._revoked_serials:
+                            if os.path.exists(self.overlord_config.puppet_signed_certs_dir + '/' + name + '.pem'):
+                                tmp_hosts.add(name)
+                                found_by_alias = True
+                                break
                 
                 if not found_by_alias:
                     tmp_hosts.add(each_gloob)
