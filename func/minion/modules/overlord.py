@@ -34,6 +34,8 @@ class OverlordModule(func_module.FuncModule):
                     current_minions.append(minion) #add it to the list
         else:
             cm = certmaster.CertMaster()
+            if cm == None: # this is minion only setup
+                return maphash
             current_minions = cm.get_signed_certs()
         for current_minion in current_minions:
             if current_minion in func_utils.get_hostname_by_route():
