@@ -28,6 +28,10 @@ class Show(base_command.BaseCommand):
     summary = usage
     subCommandClasses = [show_hardware.ShowHardware]
 
+    socket_timeout = None
+    exclude_spec = None
+    conffile = None
+
     def addOptions(self):
         self.parser.add_option("-v", "--verbose", dest="verbose",
                                action="store_true")

@@ -343,7 +343,7 @@ class Call(base_command.BaseCommand):
             self._print_progress(self.module,self.options.progress)
             return #terminate no need for more
 
-        if self.options.async:
+        if self.options.async and not self.options.delegate:
             self.partial = {}
             if self.options.nopoll:
                 print "JOB_ID:", pprint.pformat(results)
