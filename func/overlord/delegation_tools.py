@@ -15,6 +15,7 @@
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ##
 
+from func import utils as func_utils
 import fnmatch
 
 class groupby(object):
@@ -60,17 +61,19 @@ def group_paths(ungrouped_list):
     
     return (single_paths,path_group)
                                           
-def get_paths_for_glob(glob, minionmap):
+def get_paths_for_glob(glob_list, minionmap):
     """
     Given a glob, returns shortest path to all minions
     matching it in the delegation dictionary tree
     """
     
     pathlist = []
-    for elem in match_glob_in_tree(glob,minionmap):
-        result = get_shortest_path(elem,minionmap)
-        if result not in pathlist: #prevents duplicates
-            pathlist.append(result)
+    for glob in glob_list.split(";"):
+        glob = func_utils.get_all_host_aliases(glob)[0]
+        for elem in match_glob_in_tree(glob,minionmap):
+            result = get_shortest_path(elem,minionmap)
+            if result not in pathlist: #prevents duplicates
+                pathlist.append(result)
     return pathlist
 
 def list_all_minions(minionmap):
