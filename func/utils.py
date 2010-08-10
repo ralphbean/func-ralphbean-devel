@@ -141,6 +141,13 @@ def get_hostname_by_route():
     # an ip address
     return socket.gethostbyname(socket.gethostname())
 
+def get_all_host_aliases(hostname):
+    try:
+        (fqdn, aliases, ips) = socket.gethostbyname_ex(hostname)
+    except socket.gaierror, e:
+        return [hostname]
+    else:
+        return [fqdn] + aliases
 
 def get_fresh_method_instance(function_ref):
     """
