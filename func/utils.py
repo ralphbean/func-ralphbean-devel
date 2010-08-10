@@ -16,6 +16,7 @@ import socket
 import string
 import sys
 import re
+import fnmatch
 
 from certmaster.config import read_config
 from certmaster.commonconfig import MinionConfig
@@ -86,7 +87,7 @@ def get_hostname_by_route():
 
     # don't bother guessing a hostname if they specify it in the config file
     if minion_config.minion_name:
-        return minion_config.minion_name
+        return minion_config.minion_name.lower()
 
     # try to find the hostname attached to the ip of the interface that we use
     # to talk to the certmaster
@@ -107,7 +108,7 @@ def get_hostname_by_route():
         # not talking via localhost? good enough...
         if ip != '127.0.0.1':
             s.close()
-            return intf_hostname
+            return intf_hostname.lower()
     except:
         s.close()
         # something failed, reverse dns, etc
@@ -133,13 +134,33 @@ def get_hostname_by_route():
 
     # non loopback is about as good as we can do for a guess
     if ip != "127.0.0.1" and hostname is not None:
-        return hostname
+        return hostname.lower()
             
   
 
     # all else has failed to get a good hostname, so just return
     # an ip address
-    return socket.gethostbyname(socket.gethostname())
+    return socket.gethostbyname(socket.gethostname()).lower() # yes I know it's an ip but I don't trust anything
+
+def find_files_by_hostname(hostglob, filepath, fileext=''):
+    """look for files in the given filepath with the given extension that
+        match our hostname, but case insensitively. This handles the 
+        craziness that is dns names that have mixed case :("""
+    
+    # this is a little like a case insensitive glob, except it's just one 
+    # layer deep - not multiple layers
+    
+    if fileext and fileext[0] != '.':
+        fileext = '.' + fileext
+    thisregex = fnmatch.translate('%s%s' % (hostglob, fileext)) 
+    recomp = re.compile(thisregex, re.I) # case insensitive match
+    files = []
+    for potfile in os.listdir(filepath):
+        if recomp.match(potfile):
+            files.append(potfile)
+    
+    return [os.path.normpath(filepath + '/' + file) for file in files]
+
 
 def get_all_host_aliases(hostname):
     try:

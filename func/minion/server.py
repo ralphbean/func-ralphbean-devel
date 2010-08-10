@@ -29,14 +29,13 @@ from certmaster.commonconfig import CMConfig
 from func import logger
 from certmaster import certs
 import func.jobthing as jobthing
-from func import utils as func_utils
 
 # our modules
 import AuthedXMLRPCServer
 import codes
 import func.module_loader as module_loader
 import func.minion.acls as acls_mod
-from func import utils as futils
+from func import utils as func_utils
 
 
 from certmaster import utils
@@ -89,6 +88,8 @@ class XmlRpcInterface(object):
         self.handlers["system.list_modules"] = self.list_modules
         self.handlers["system.inventory"] = self.inventory
         self.handlers["system.grep"] = self.grep
+        # ultimately need to add a method here to force the server to reload itself so all NEW connections
+        # get a new RequestHandler
 
     def list_modules(self):
         modules = self.modules.keys()
@@ -100,9 +101,6 @@ class XmlRpcInterface(object):
         methods.sort()
         return methods
     
-    def load_module(self, name):
-        """FIXME load a module and set it up on the running xmlrpc instance"""
-        pass
     
     import func.minion.modules.func_module as fm
     def grep(self,word):
@@ -192,7 +190,7 @@ class FuncApiMethod:
         self.logger.debug("(X) -------------------------------------------")
 
         try:
-            self.__method = futils.get_fresh_method_instance(self.__method)
+            self.__method = func_utils.get_fresh_method_instance(self.__method)
             rc = self.__method(*args)
         except codes.FuncException, e:
             self.__log_exc()
@@ -250,12 +248,15 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
         if self.config.key_file != '':
             self.key = self.config.key_file
         else:
-            self.key = "%s/%s.pem" % (self.cm_config.cert_dir, hn)            
+            # search case-insensitively to find the right key - take the first one - if there are
+            # more than one differing only by case then the user is going to get 'unique' behavior :)
+            self.key = func_utils.find_files_by_hostname(hn, self.cm_config.cert_dir, '.pem')[0]
         
         if self.config.cert_file != '':
             self.cert = self.config.cert_file
         else:
-            self.cert = "%s/%s.cert" % (self.cm_config.cert_dir, hn)
+            self.cert = func_utils.find_files_by_hostname(hn, self.cm_config.cert_dir, '.cert')[0]
+
         if self.config.ca_file != '':
             self.ca = self.config.ca_file
         else:
@@ -373,7 +374,7 @@ def main(argv):
     try:
         config = read_config("/etc/func/minion.conf", FuncdConfig)
         if config.use_certmaster:
-            hn = futils.get_hostname_by_route()
+            hn = func_utils.get_hostname_by_route()
             requester.request_cert(hn)
         serve()
     except codes.FuncException, e:

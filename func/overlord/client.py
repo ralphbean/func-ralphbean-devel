@@ -15,7 +15,6 @@
 from func.jobthing import RETAIN_INTERVAL
 
 import sys
-import glob
 import os
 import time
 import shlex
@@ -158,13 +157,14 @@ class Minions(object):
             else:
                 each_gloob = shortest_path[0]
 
-        actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, each_gloob, self.cm_config.cert_extension)
-        certs = glob.glob(actual_gloob)
+        #actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, each_gloob, self.cm_config.cert_extension)
+        certs = func_utils.find_files_by_hostname(each_gloob, self.cm_config.certroot, self.cm_config.cert_extension)
         
         # pull in peers if enabled for minion-to-minion
         if self.cm_config.peering:
-            peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, each_gloob, self.cm_config.cert_extension)
-            certs += glob.glob(peer_gloob)
+            #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, each_gloob, self.cm_config.cert_extension)
+            certs += func_utils.find_files_by_hostname(each_gloob, self.cm_config.peeroot, self.cm_config.cert_extension)            
+            
         
         # if we can't match this gloob and the gloob is not REALLY a glob
         # let the gloob be the hostname we try to connect to.
@@ -173,11 +173,11 @@ class Minions(object):
             aliases = func_utils.get_all_host_aliases(each_gloob)
 
             for name in aliases:
-                actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, name, self.cm_config.cert_extension)
-                certs += glob.glob(actual_gloob)
+                #actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, name, self.cm_config.cert_extension)
+                certs += func_utils.find_files_by_hostname(name, self.cm_config.certroot, self.cm_config.cert_extension)                
                 if self.cm_config.peering:
-                    peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
-                    certs += glob.glob(peer_gloob)
+                    #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
+                    certs += func_utils.find_files_by_hostname(name, self.cm_config.peeroot, self.cm_config.cert_extension)
                     break
 
             if self.overlord_config.allow_unknown_minions and not certs:
