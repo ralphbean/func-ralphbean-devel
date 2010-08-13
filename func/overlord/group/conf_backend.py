@@ -67,6 +67,9 @@ class ConfBackend(BaseBackend):
         """
         Adds a host to a group
         """
+        host = host.lower()
+        group = group.lower()
+        
         if not self.__groups.has_key(group):
             self.__groups[group] = []
 
@@ -85,6 +88,7 @@ class ConfBackend(BaseBackend):
         """
         Adds a group
         """
+        group = group.lower()
         if self.__groups.has_key(group):
             return (False,"Group name : %s already exists"%group)
         #create with an empty list
@@ -117,6 +121,9 @@ class ConfBackend(BaseBackend):
         """
         Remove a host from groups
         """
+        host = host.lower()
+        group = group.lower()
+        
         if not self.__groups.has_key(group) or not host in self.__groups[group]:
             return (False,"Non existing group or name")
         
@@ -155,6 +162,7 @@ class ConfBackend(BaseBackend):
         @param exclude : A list to be excluded from final set
 
         """
+        
         if not pattern:
             #return all of them
             if not exclude:
@@ -168,7 +176,7 @@ class ConfBackend(BaseBackend):
                 #there is no mean to check here for
                 #exclude list ...
                 for g in self.__groups.keys():
-                    if g == pattern:
+                    if g == pattern.lower():
                         return [g]
                 return []
 
@@ -182,7 +190,7 @@ class ConfBackend(BaseBackend):
                 else:
                     tmp_l = set()
                     for g in self.__groups.keys():
-                        if pattern.lower() in g.lower():
+                        if pattern.lower() in g:
                             tmp_l.add(g)
                     #get the difference of 2 sets
                     return list(tmp_l.difference(set(exclude)))
@@ -225,13 +233,13 @@ class ConfBackend(BaseBackend):
                 #there is no mean to check here for exclude list ...
                 if type(pattern)==str:
                     for g in hosts:
-                        if g == pattern:
+                        if g.lower() == pattern.lower():
                             return [g]
                 else:
                     #sometimes we pass all list to compare em
                     tmp = []
                     for p in pattern:
-                        if p in hosts:
+                        if p.lower() in hosts:
                             tmp.append(p)
                     return tmp
                 return []
