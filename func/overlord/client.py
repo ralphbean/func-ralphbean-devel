@@ -163,7 +163,7 @@ class Minions(object):
         # pull in peers if enabled for minion-to-minion
         if self.cm_config.peering:
             #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, each_gloob, self.cm_config.cert_extension)
-            certs += func_utils.find_files_by_hostname(each_gloob, self.cm_config.peeroot, self.cm_config.cert_extension)            
+            certs += func_utils.find_files_by_hostname(each_gloob, self.cm_config.peerroot, self.cm_config.cert_extension)            
             
         
         # if we can't match this gloob and the gloob is not REALLY a glob
@@ -177,7 +177,7 @@ class Minions(object):
                 certs += func_utils.find_files_by_hostname(name, self.cm_config.certroot, self.cm_config.cert_extension)                
                 if self.cm_config.peering:
                     #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
-                    certs += func_utils.find_files_by_hostname(name, self.cm_config.peeroot, self.cm_config.cert_extension)
+                    certs += func_utils.find_files_by_hostname(name, self.cm_config.peerroot, self.cm_config.cert_extension)
                     break
 
             if self.overlord_config.allow_unknown_minions and not certs:
