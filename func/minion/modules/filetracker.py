@@ -71,13 +71,14 @@ class FileTracker(func_module.FuncModule):
 
     #==========================================================
                
-    def track(self, file_name_globs, full_scan=0, recursive=0):
+    def track(self, file_name_globs, full_scan=0, recursive=0, files_only=0):
         """
         Adds files to keep track of.
         file_names can be a single filename, a list of filenames, a filename glob
            or a list of filename globs
         full_scan implies tracking the full contents of the file, defaults to off
         recursive implies tracking the contents of every subdirectory
+        files_only implies tracking files that are files (not directories)
         """
 
         filehash = self.__load()
@@ -102,6 +103,8 @@ class FileTracker(func_module.FuncModule):
             filenames = glob.glob(filenameglob)
             if recursive:
                 filenames += _recursive(filenames)
+            if files_only:
+                filenames = [f for f in filenames if os.path.isfile(f)]
             for filename in filenames:
                 filehash[filename] = full_scan
         self.__save(filehash)
@@ -282,6 +285,12 @@ class FileTracker(func_module.FuncModule):
                             'optional':True,
                             'default':0,
                             'description':"The 0 is for off and 1 is for on"
+                            },
+                        'files_only':{
+                            'type':'int',
+                            'optional':True,
+                            'default':0,
+                            'description':"Track only files (not dirs or links)"
                             }
                         },
                     'description':"Adds files to keep track of"
