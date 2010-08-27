@@ -25,7 +25,11 @@ import func.overlord.func_command as func_command
 myname, argv = sys.argv[0], sys.argv[1:]
 cli = func_command.FuncCommandLine()
 try:
-    sys.exit(cli.parse(argv))
+    ret = cli.parse(argv)
+    if type(ret) == type(1):
+        sys.exit(ret)
+    else:
+        sys.exit(0)
 except Func_Client_Exception, e:
     print "ERROR:", e
     sys.exit(1)
