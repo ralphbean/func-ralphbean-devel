@@ -243,12 +243,14 @@ def minion_async_run(retriever, method, args,minion_query=None):
 from func.index_db import write_index_data
 from func.index_db import key_exists
 
-def job_status(jobid, client_class=None):
+def job_status(jobid, client_class=None, client_class_config=None):
  
     # NOTE: client_class is here to get around some evil circular reference
     # type stuff.  This is intended to be called by minions (who can leave it None)
     # or by the Client module code (which does not need to be worried about it).  API
     # users should not be calling jobthing.py methods directly.
+    # NOTE: class_config is here so we can pass in all of our settings from the
+    # parent - otherwise async jobs with timeouts go straight to hell.
    
     got_status = __get_status(jobid)
     # if the status comes back as JOB_ID_PARTIAL what we have is actually a hash
@@ -281,7 +283,7 @@ def job_status(jobid, client_class=None):
                 match_dict={jobid:[]}
                 match_dict[jobid].append((minion_job,host))
 
-            client = client_class(host, noglobs=True, async=False)
+            client = client_class(host, noglobs=True, async=False, config=client_class_config)
             minion_result = client.jobs.job_status(minion_job)
 
             if type(minion_result) != list or len(minion_result)!=2:

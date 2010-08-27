@@ -578,7 +578,8 @@ class Overlord(object):
         """
         Use this to acquire status from jobs when using run with async client handles
         """
-        status,async_result = jobthing.job_status(jobid, client_class=Overlord)
+        status,async_result = jobthing.job_status(jobid, client_class=Overlord, 
+                   client_class_config=self.config)
         if not self.overlord_query.fact_query:
             #that will use the default overlord job_status
             return (status,display_active_facts(async_result))
@@ -1063,9 +1064,10 @@ class Overlord(object):
                   nforks = copy(self.nforks),
                   async = copy(self.async),
                   delegate=copy(self.delegate),
-                  mapfile = copy(self.mapfile)
+                  mapfile = copy(self.mapfile),
+                  config = copy(self.config)
                 )
-        
+        c.timeout = copy(self.timeout)
         c.cm_config = copy(self.cm_config)
         return c
 
