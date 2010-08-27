@@ -81,7 +81,8 @@ def get_hostname_by_route():
     # FIXME: this code ignores http proxies (which granted, we don't
     #      support elsewhere either. 
     hostname = None
-  
+    ip = None
+
     minion_config_file = '/etc/func/minion.conf'
     minion_config = read_config(minion_config_file, FuncdConfig)
 
