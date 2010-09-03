@@ -70,10 +70,10 @@ class AuthedSSLXMLRPCServer(BaseAuthedXMLRPCServer, SSLCommon.BaseSSLServer, Sim
 
     def __init__(self, address, pkey, cert, ca_cert, authinfo_callback=None, timeout=None):
         BaseAuthedXMLRPCServer.__init__(self, address, authinfo_callback)
-        if hasattr(SimpleXMLRPCServer.SimpleXMLRPCDispatcher(), 'allow_none'):
-            SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, AuthedSimpleXMLRPCRequestHandler, allow_none=True)
-        else:
+        if sys.version_info[0] <= 2 and sys.version_info[1] <= 4:
             SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, AuthedSimpleXMLRPCRequestHandler)
+        else:
+            SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, AuthedSimpleXMLRPCRequestHandler, allow_none=True)
         SSLCommon.BaseSSLServer.__init__(self, address, AuthedSimpleXMLRPCRequestHandler, pkey, cert, ca_cert, timeout=timeout)
 
 
