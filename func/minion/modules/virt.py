@@ -130,6 +130,26 @@ class FuncLibvirtConnection(object):
     def get_type(self):
         return self.conn.getType()
 
+    def set_vcpus(self, vmid, num):
+        vm = self.conn.lookupByName(vmid)
+        return vm.setVcpus(num)
+
+    def get_maxVcpus(self, vmid):
+        vm = self.conn.lookupByName(vmid)
+        return vm.maxVcpus()
+
+    def set_maxMemory(self, vmid, amount):
+        vm = self.conn.lookupByName(vmid)
+        return vm.setMaxMemory(amount)
+
+    def get_maxMemory(self, vmid):
+        vm = self.conn.lookupByName(vmid)
+        return vm.maxMemory()
+
+    def set_memory(self, vmid, amount):
+        vm = self.conn.lookupByName(vmid)
+        return vm.setMemory(amount)
+
 
 class Virt(func_module.FuncModule):
 
@@ -444,3 +464,42 @@ class Virt(func_module.FuncModule):
 		return (-1,'Config file /etc/libvirt/qemu/%s.xml not found' % vmid)
 	return (-2,'Unmatched Condition in set_graphics method')
 
+    def set_vcpus(self, vmid, num):
+        """
+        Sets the number of VCPUs on a guest
+        """
+
+        self.__get_conn()
+        return self.conn.set_vcpus(num)
+
+    def get_maxVcpus(self, vmid):
+        """
+        Gets the max number of VCPUs on a guest
+        """
+
+        self.__get_conn()
+        return self.conn.get_maxVcpus(num)
+
+    def set_maxMemory(self, vmid, amount):
+        """
+        Sets the max memory on a guest
+        """
+
+        self.__get_conn()
+        return self.conn.set_maxMemory(vmid, amount)
+
+    def get_maxMemory(self, vmid):
+        """
+        Gets the max memory on a guest
+        """
+
+        self.__get_conn()
+        return self.conn.set_getMaxMemory(vmid)
+
+    def set_memory(self, vmid, amount):
+        """
+        Sets the memory on a guest
+        """
+
+        self.__get_conn()
+        return self.conn.set_memory(vmid, amount)

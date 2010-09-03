@@ -36,9 +36,9 @@ class DiskModule(func_module.FuncModule):
                 continue
             (device, total, used, available, percentage, mount) = disk.split()
             results[mount] = {'device':device,
-                              'total':int(total),
-                              'used':int(used),
-                              'available':int(available),
+                              'total':str(total),
+                              'used':str(used),
+                              'available':str(available),
                               'percentage':int(percentage[:-1])}
         return results
 
