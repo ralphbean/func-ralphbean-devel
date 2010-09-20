@@ -11,8 +11,8 @@
 
 Summary: Remote management framework
 Name: func
-Version: 0.26
-Release: 2%{?dist}
+Version: 0.27
+Release: 1%{?dist}
 Source0: %{name}-%{version}.tar.gz
 License: GPLv2+
 Group: Applications/System
@@ -24,7 +24,7 @@ Requires: python >= 2.3
 Requires: pyOpenSSL
 %endif
 Requires: %{python}-simplejson
-Requires: certmaster >= 0.25
+Requires: certmaster >= 0.27
 Requires: logrotate
 Requires: smolt
 BuildRequires: %{python}-devel
@@ -174,6 +174,9 @@ fi
 
 
 %changelog
+* Wed Aug 25 2010 Seth Vidal <skvidal at fedoraproject.org> - 0.27-1
+- bump to 0.27
+
 * Wed Sep 9 2009 Adrian Likins <alikins@redhat.com> - 0.26-1
 - require smolt (should be there on most stuff we support, and
   hardware module is lame without it)
