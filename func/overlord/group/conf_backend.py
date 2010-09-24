@@ -61,6 +61,7 @@ class ConfBackend(BaseBackend):
                     hosts = hosts.replace(';',',')
                     hosts = hosts.split(",")
                     for h in hosts:
+                        h = h.strip()
                         self.add_host_to_group(section,h,save=False)
                         
     def add_host_to_group(self,group,host,save=True):
