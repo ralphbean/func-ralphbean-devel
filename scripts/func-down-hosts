@@ -1,0 +1,35 @@
+#!/usr/bin/python -tt
+# by skvidal
+# gplv2+
+
+import sys
+import func.overlord.client
+from optparse import OptionParser
+
+def parse_args(args):
+    parser = OptionParser(version = "1.0")
+    parser.add_option('--host', default=[], action='append',
+               help="hosts to act on, defaults to ALL")
+    parser.add_option('--timeout', default=10, type='int',
+               help='set the wait timeout for func commands')
+    parser.add_option('--forks', default=40, type='int',
+               help='set the number of forks to start up')
+    (opts, args) = parser.parse_args(args)
+
+    return opts, args, parser
+
+
+opts, args, parser = parse_args(sys.argv[1:])
+hosts ='*'
+if opts.host:
+    hosts = ';'.join(opts.host)
+
+fc = func.overlord.client.Client(hosts, timeout=opts.timeout, nforks=opts.forks)
+
+results = fc.test.ping()
+offline = []
+for (hn, out) in results.items():
+    if out != 1:
+        offline.append(hn)
+
+print '\n'.join(sorted(offline))

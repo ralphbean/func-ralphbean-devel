@@ -1,0 +1,650 @@
+#!/usr/bin/python -tt
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Copyright 2010 Red Hat, Inc
+# Written By Seth Vidal - skvidal@fedoraproject.org
+
+#func yum overlord script
+
+
+# TODO:
+# install ....
+# remove ....
+# push custom module over func and activate
+# config file
+# --test mode/options
+# add arbitrary args to a command (include, exclude, etc)
+# needs restarting
+# is running kernel latest installed (needs reboot?)
+# get list of repos
+# some kind of locking mechanism - so we hold off hitting a request on a host that's already doing something
+#   maybe that means client-local locking on the minion-side.
+
+
+
+import sys
+import os
+import time
+import stat
+import re
+import glob
+from optparse import OptionParser
+import func.overlord.client as fclient
+from func.utils import is_error
+from certmaster.config import read_config
+
+
+class FYError(Exception):
+    def __init__(self, value=None):
+        Exception.__init__(self)
+        self.value = value
+    def __str__(self):
+        return "%s" %(self.value,)
+
+
+def parse_time(s):
+    MULTS = {'d': 60 * 60 * 24, 'h' : 60 * 60, 'm' : 60, 's': 1}
+
+
+    if s[-1].isalpha():
+        n = s[:-1]
+        unit = s[-1].lower()
+        mult = MULTS.get(unit, None)
+        if not mult:
+            raise ValueError("unknown unit '%s'" % unit)
+    else:
+        n = s
+        mult = 1
+
+    try:
+        n = float(n)
+    except (ValueError, TypeError), e:
+        raise ValueError('invalid value')
+
+    if n < 0:
+        raise ValueError("seconds value may not be negative")
+
+        return int(n * mult)
+
+def errorprint(msg):
+    print >> sys.stderr,  msg
+    
+def parse_args(args):
+    basecmds = ('update', 'getinfo', 'status', 'install', 'remove', 'list', 
+                'custom', 'clean', 'search', 'compare')
+
+    usage = """func-yum [options] [command]
+commands: \n  %s""" % '\n  '.join(sorted(basecmds))
+    parser = OptionParser(version = "func-yum 1.0", usage=usage)
+    parser.add_option('--host', default=[], action='append',
+               help="hosts to act on, defaults to ALL")
+    parser.add_option('--hosts-from-file', default=None, dest="hostfile",
+               help="read list of hosts from this file, if '-' read from stdin")
+    parser.add_option('--timeout', default=5000, type='int',
+               help='set the wait timeout for func commands')
+    parser.add_option('--short-timeout', default=5, type='int', dest='short_timeout',
+               help='set the short timeout wait for connecting to hosts')
+    parser.add_option('--forks', default=60, type='int',
+               help='set the number of forks to start up')
+    parser.add_option('-q','--quiet', default=False, action='store_true',
+               help='only output what you asked for')
+    parser.add_option('--store-custom-as', default=None, dest='store_custom_as',
+               help='store the custom command output as this keyname')
+    parser.add_option('--clean-older-than', default='2W', dest='clean_older_than', 
+               help='data stored which is older than this will be cleaned up.')
+    parser.add_option('--outputpath', default='/var/cache/func-yum/', dest='outputpath', 
+               help="path where func-yum's cache will be stored")
+    
+    (opts, args) = parser.parse_args(args)
+
+    if not args:
+        print parser.format_help()
+        sys.exit(1)
+
+    if args[0] not in basecmds:
+        print parser.usage
+        sys.exit(1)
+
+    if opts.outputpath[-1] != '/':
+        opts.outputpath =  opts.outputpath + '/'
+
+
+    if opts.hostfile:
+        hosts = []
+        if opts.hostfile == '-':
+            hosts = sys.stdin.readlines()
+        else:
+            hosts = open(opts.hostfile, 'r').readlines()
+        
+        for hn in hosts:
+            hn = hn.strip()
+            if hn.startswith('#'):
+                continue
+            hn = hn.replace('\n', '')
+            opts.host.append(hn)
+        
+            
+    return opts, args
+
+def filter_hosts(hosts, opts):
+    """returns two lists: online and offline hosts"""
+    
+    online = []
+    offline = []
+    fc = fclient.Client(hosts, timeout=opts.short_timeout, nforks=opts.forks)
+    results = fc.test.ping()
+    for (hn, out) in results.items():
+        if out != 1:
+            offline.append(hn)
+        else:
+            online.append(hn)
+
+    if not online:
+        errorprint("No hosts online after filter to access")
+        errorprint("Offline Hosts: %s" % ' '.join(offline))
+        sys.exit(1)
+
+    return online, offline
+    
+
+def _write_data(basepath, data_key, data_val, timestamp=None, make_latest=True, error=False):
+    """take data and output it into a location, mark it as the latest, too"""
+    if not timestamp:
+        timestamp = time.strftime('%Y-%m-%d-%H:%M:%S')
+    # someplace/$hostname/data_key/timestamp and then symlinked to 'latest'
+
+    dn = basepath + '/' + data_key
+    latest = dn + '/latest'
+    latesterror = dn + '/latest-error'    
+    
+    if not os.path.exists(dn):
+        os.makedirs(dn)
+
+    fn = dn + '/' + timestamp
+    if error:
+        fn += '-error'
+
+    fo = open(fn, 'w')
+    if type(data_val) == type([]):
+        for line in data_val:
+            if line.strip():
+                fo.write(line + '\n')
+    else:
+        if data_val.strip():
+            fo.write(data_val)
+    fo.flush()
+    fo.close()
+
+    if make_latest:
+        if os.path.exists(latest):
+            os.unlink(latest)
+        os.symlink(fn, latest)
+
+        if error:
+            if os.path.exists(latesterror):
+                os.unlink(latesterror)
+            os.symlink(fn, latesterror)
+
+    return latest
+
+def _wait_for_async(fc, opts, jobid):
+    finished = False
+    last_completed = -1
+    results = {}
+    while not finished:
+        (jobstatus, info) = fc.job_status(jobid)
+        if type(info) != type({}):
+            completed = 0
+        else:
+            completed = len(info.keys())
+
+        if not opts.quiet:
+            if completed != last_completed:
+                print '%s/%s hosts finished' % (completed, len(fc.minions))
+                last_completed = completed
+            
+        if jobstatus == 1:
+            finished=True
+            results = info
+            break
+        time.sleep(5)
+    
+    return results
+
+def store_info(fc, opts):
+    # retrieve info to outputpath/$hostname/installed/timestamp
+   
+    # ping the box first - if it fails - move on.
+
+    now = time.strftime('%Y-%m-%d-%H:%M:%S')
+    #results = fc.rpms.inventory()# would like to use inventory, but no can do, 
+         # until I fix/check the module problems on python 2.4
+
+    errors = []
+    # installed pkgs
+    results = fc.command.run('rpm -qa')
+    data_key = 'installed'
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error getting installed from %s' % hn)
+            error = True
+        
+        basepath = opts.outputpath + hn
+        data_val = sorted(output[1].split('\n'))
+        _write_data(basepath, data_key, data_val, timestamp=now, error=error)
+
+    # available updates
+    results = fc.yumcmd.check_update()
+    data_key = 'updates'
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error getting updates from %s' % hn)
+            error = True
+        
+        basepath = opts.outputpath + hn
+        data_val = sorted(output)
+        _write_data(basepath, data_key, data_val, timestamp=now, error=error)
+
+    # orphaned/extras pkgs
+    # fixme - make this not a command.run but something in yumcmd    
+    results = fc.command.run('/usr/bin/package-cleanup -q --orphans')
+    data_key = 'orphans'
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error getting orphans from %s' % hn)
+            error = True
+        
+        basepath = opts.outputpath + hn
+        data_val = output[1]
+        _write_data(basepath, data_key, data_val, timestamp=now, error=error)
+
+
+    # get yum list-security if we can
+    results = fc.command.run('/usr/bin/yum list-security')
+    data_key = 'security-updates'
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error getting security-list from %s' % hn)
+            error = True
+        
+        basepath = opts.outputpath + hn
+        res = []
+        for line in output[1].split('\n'):
+            if line.startswith('Loaded plugins'):
+                continue
+            if line.startswith('list-security'):
+                continue
+            res.append(line)
+        data_val = res
+        _write_data(basepath, data_key, data_val, timestamp=now, error=error)
+
+    # get the needs_restarting code over to the clients and generate that list
+    # as well
+    
+    return errors
+
+def update(fc, opts, pkg_list):
+    errors = []
+    pkg_str = None
+    if pkg_list:
+        pkg_str = ' '.join(pkg_list)
+    if pkg_str:
+        jobid = fc.yumcmd.update(pkg_str)
+    else:
+        jobid = fc.yumcmd.update()
+    
+    results = _wait_for_async(fc, opts, jobid)
+    
+    data_key = 'updated'
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error updating %s' % hn)
+            error = True
+
+        basepath = opts.outputpath + hn
+        data_val = output
+        res = _write_data(basepath, data_key, data_val, error=error)
+        if not opts.quiet: print 'outputted results for %s to:\n   %s' % (hn, res)
+    return errors
+    
+def custom(fc, opts, args):
+    errors = []
+    fullcmd = ''
+    if args[0][0] != '/':
+        fullcmd += '/usr/bin/yum '
+    fullcmd += '%s' % ' '.join(args)
+    
+    print fullcmd
+    data_key = 'custom'
+    if opts.store_custom_as:
+        data_key = opts.store_custom_as
+        
+    results = fc.command.run(fullcmd)
+    for (hn, output) in results.items():
+        error = False
+        if is_error(output):
+            errors.append('Error running custom command: %s on %s' % (fullcmd, hn))
+            error = True
+
+        data_val = fullcmd + '\n'
+        data_val += output[1]
+        basepath = opts.outputpath + hn
+
+        res = _write_data(basepath, data_key, data_val, error=error)
+        if not opts.quiet: print 'outputted results for %s to:\n   %s' % (hn, res)
+    return errors
+    
+def return_status(hosts, opts):
+
+    # needs updates
+    # last updates applied on
+    # num pkgs installed
+    # num orphans
+    # last time inventory was gotten
+    status = {}
+    for hn in hosts:
+        if hn not in status:
+            status[hn] = {'last_check': None,
+                          'latest_updated': None,
+                          'num_updates':'unknown',
+                          'num_installed': 'unknown',
+                          'num_orphans': 'unknown'}
+        hnstats = status[hn]
+        mypath = opts.outputpath+hn
+        if os.path.exists(mypath + '/installed/latest'):
+            hnstats['last_check'] = os.stat(mypath +'/installed/latest')[stat.ST_MTIME]
+        if os.path.exists(mypath + '/updated/latest'):
+            hnstats['latest_updated'] = os.stat(mypath +'/updated/latest')[stat.ST_MTIME]
+        if os.path.exists(mypath + '/updates/latest'):
+            hnstats['num_updates'] = len(open(mypath + '/updates/latest').readlines())
+        if os.path.exists(mypath + '/installed/latest'):
+            hnstats['num_installed'] = len(open(mypath + '/installed/latest').readlines())
+        if os.path.exists(mypath + '/orphans/latest'):
+            hnstats['num_orphans'] = len(open(mypath + '/orphans/latest').readlines())
+
+    return status
+        
+def _convert_date_to_relative(now, then):
+    """return a time relative to now  of the timestamp (then)"""
+  
+    if not then:
+        return 'Never'
+        
+    difftime = now - then
+
+    if difftime > 86400*28:
+        return "LONG LONG AGO: %s" % str(time.strftime('%Y-%m-%d-%H:%M', time.localtime(then)))
+        
+    if difftime > 86400*7: # weeks
+       weeks = difftime / (86400*7)
+       return "%s weeks ago" % int(weeks)
+       
+    if difftime > 86400: #days
+        days = difftime / 86400
+        return "%s days ago" % int(days)
+    
+    if difftime > 3600: #hours
+        hours = difftime / 3600
+        return "%s hours ago" % int(hours)
+    
+    if difftime > 60: #minutes
+        mins = difftime / 60
+        return "%s minutes ago" % int(mins)
+        
+    if difftime < 60:
+        return "Just Now"
+    
+    
+        
+        
+def return_info(hn, opts, infotype=None, as_list=False):
+    if not infotype:
+        raise FYError, "No Infotype specified"
+            
+    if (not os.path.exists(opts.outputpath + '/' + hn) or 
+        not os.path.exists(opts.outputpath + '/' + hn + '/' + infotype) or
+        not os.path.exists(opts.outputpath + '/' + hn + '/' + infotype + '/latest')):
+        msg = 'info of type: %s not available for: %s\n' % (infotype,hn)
+        raise FYError, msg
+        
+    fo = open(opts.outputpath + '/' + hn + '/' + infotype + '/latest', 'r')
+    if as_list:
+        info = fo.readlines()
+    else:
+        info = fo.read()
+    fo.close()
+    return info
+
+
+def search(hosts, opts, search_str, target=None):
+    results = {} # hostname = [target: matched line]
+    re_obj  = re.compile(search_str)
+    if not target:
+        target=['*']
+    elif type(target) == type(''):
+        target = [target]
+    for hn in hosts:
+        for tgt in target:
+            fns = glob.glob(opts.outputpath + '/' + hn + '/' + tgt + '/latest')
+            for fn in fns:
+                thistarget = fn.replace('/latest', '')
+                thistarget = thistarget.replace(opts.outputpath + '/' + hn + '/', '')
+                for r in open(fn, 'r').readlines():
+                    if re_obj.search(r):
+                        if hn not in results:
+                            results[hn] = []
+                        results[hn].append('%s:%s' % (thistarget, r.strip()))
+    return results
+
+def get_host_list(hosts):
+    fc = fclient.Client(hosts)
+    host_list = fc.minions_class.get_all_hosts() # grumble
+    return host_list
+    
+def main(args):
+
+    opts, args = parse_args(args)
+    basecmd = args[0]
+    extcmds = args[1:]
+    hosts ='*'
+    if opts.host:
+        hosts = ';'.join(opts.host)
+    
+    
+
+    if basecmd == 'getinfo':
+        
+        hosts, offline = filter_hosts(hosts, opts)
+        getinfo_forks = len(hosts) # gives us a slight advantage on an expensive operation
+        fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=getinfo_forks)
+        errors = store_info(fc, opts)
+        if not opts.quiet:
+            print 'stored info for:' 
+            for h in sorted(hosts):
+                print ' %s' % h
+            
+            print 'offline hosts:'
+            for h in sorted(offline):
+                print '  %s' % h
+
+        for error in errors:
+            errorprint('  %s' % error)
+    
+    elif basecmd == 'update':
+        hosts, offline = filter_hosts(hosts, opts)
+        
+        fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=opts.forks, async=True)
+        errors = update(fc, opts, extcmds)
+        for error in errors:
+            errorprint('  %s' % error)
+        if not opts.quiet:
+            print 'updating stored info for updated hosts'
+        fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=opts.forks)
+        errors = store_info(fc, opts) # get latest info for the hosts 
+        for error in errors:
+            errorprint('  %s' % error)
+        
+        
+        
+    elif basecmd == 'status':
+        host_list = get_host_list(hosts)
+        now = time.time()
+        status =  return_status(host_list, opts)
+        for hn in sorted(status.keys()):
+            msg = """%s:  
+  Last checked: %s
+  Last update run: %s
+  Updates available: %s
+  Installed pkgs: %s
+  Orphaned Pkgs: %s
+  """ % (hn, _convert_date_to_relative(now, status[hn]['last_check']), 
+             _convert_date_to_relative(now, status[hn]['latest_updated']), 
+         status[hn]['num_updates'], status[hn]['num_installed'],
+         status[hn]['num_orphans'])
+            print msg
+
+
+    elif basecmd == 'list':
+        host_list = get_host_list(hosts)
+        extopts = ['installed', 'updates', 'orphans', 'security-updates',
+                   'updated', 'with-security', 'with-updates']
+        if len(extcmds) == 0:
+            errorprint("specify %s" % ' '.join(extopts))
+            return 1
+        
+        for item in extcmds:
+            if item in ['installed', 'updates', 'orphans', 'updated', 'security-updates']:
+                for hn in sorted(host_list):
+                    try:
+                        info = return_info(hn,opts, item)
+                    except FYError, e:
+                        errorprint(str(e))
+                    else:
+                        print '%s %s:' % (hn, item)
+                        print info
+                    print ''
+                
+            elif item.startswith('with-'):
+                if item == 'with-security':
+                    item = 'with-security-updates'
+                item_name = item.replace('with-', '')
+                
+                hwu = {}
+                for hn in sorted(host_list):
+                    res = []
+                    try:
+                        this_list = return_info(hn, opts, item_name, as_list=True)
+                    except FYError, e:
+                        res.append(str(e))
+                        continue
+                    
+                    for line in this_list:
+                        if re.match('\s*(#|$)', line):
+                            continue
+                        res.append(line)
+                            
+                    if res:
+                        hwu[hn]=len(res)
+                    
+                for h,num in sorted(hwu.items()):
+                    print '%s  %s : %s' % (item_name, h, num)
+            else:
+                for hn in sorted(host_list):
+                    try:
+                        info = return_info(hn,opts, item)
+                    except FYError, e:
+                        continue
+                    print '%s %s' % (hn, item)
+                    print info
+                    print ''
+                
+    elif basecmd == 'custom':
+        hosts, offline = filter_hosts(hosts, opts)
+        fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=opts.forks)
+        errors = custom(fc, opts, extcmds)
+        for error in errors:
+            errorprint('  %s' % error)
+    
+    elif basecmd == 'clean':
+        host_list = get_host_list(hosts)
+        extopts = ['old-data', 'downed-hosts', 'empty-hosts']
+        if len(extcmds) == 0:
+            errorprint("specify %s" % ' '.join(extopts))
+            return 1
+        
+        for item in extcmds:
+            if item == 'old-data':
+                pass
+    elif basecmd == 'search':
+        host_list = get_host_list(hosts)        
+        if not extcmds:
+            errorprint("search searchstring [where to search: installed, updates, updated]")
+            errorprint("must specify at least what to search for")
+            return 1
+        search_str = extcmds[0]
+        if len(extcmds) > 1:
+            search_target = extcmds[1:]
+        else:
+            search_target = None
+        results = search(host_list, opts, search_str, target=search_target)
+        for hn in sorted(results.keys()):
+                for i in sorted(results[hn]):
+                    print '%s:%s' % (hn, i)
+
+    elif basecmd == 'compare':
+        if len(extcmds) != 2:
+            errorprint("func-yum compare hostname1 hostname2")
+            errorprint("Must specify exactly two hosts to compare")
+            return 1
+        hosts = ';'.join(extcmds)
+        host_list = get_host_list(hosts)
+        if len(host_list) != 2:
+            errorprint("Must specify exactly two hosts to compare, hosts found: %s" % ' '.join(host_list))
+            return 1
+        host1 = host_list[0]
+        host2 = host_list[1]
+        try:
+            host1_inst = set(return_info(host1, opts, 'installed', as_list=True))
+            host2_inst = set(return_info(host2, opts, 'installed', as_list=True))
+        except FYError, msg:
+            errorprint("Error: %s" % msg)
+            return 1
+        host1diff = host1_inst.difference(host2_inst)
+        host2diff = host2_inst.difference(host1_inst)
+        print 'Packages on %s not on %s' % (host1, host2)
+        print ''.join(host1diff)
+        print 'Packages on %s not on %s' % (host2, host1)
+        print ''.join(host2diff)
+        
+    else:
+        errorprint('command %s not implemented yet' % basecmd)
+        return 1
+    
+
+    # install # pkg
+    # remove # pkg pkg pkg
+    
+
+    return 0
+    
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
+
+    

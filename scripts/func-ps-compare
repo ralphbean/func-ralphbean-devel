@@ -1,0 +1,71 @@
+#!/usr/bin/python -tt
+# by skvidal
+# gplv2+
+
+import sys
+import func.overlord.client as fclient
+from optparse import OptionParser
+from func.utils import is_error
+
+
+def get_host_list(hosts):
+    fc = fclient.Client(hosts)
+    host_list = fc.minions_class.get_all_hosts() # grumble
+    return host_list
+    
+    
+def parse_args(args):
+    parser = OptionParser(version = "1.0")
+    parser.add_option('--timeout', default=10, type='int',
+               help='set the wait timeout for func commands')
+    (opts, args) = parser.parse_args(args)
+
+    return opts, args, parser
+
+
+opts, extcmds, parser = parse_args(sys.argv[1:])
+
+
+if len(extcmds) != 2:
+    print("func-ps-compare hostname1 hostname2")
+    print("Must specify exactly two hosts to compare")
+    sys.exit(1)
+
+hosts = ';'.join(extcmds)
+host_list = get_host_list(hosts)
+
+if len(host_list) != 2:
+    print("Must specify exactly two hosts to compare, hosts found: %s" % ' '.join(host_list))
+    sys.exit(1)
+
+host1 = host_list[0]
+host2 = host_list[1]
+
+fc = fclient.Client(hosts, timeout=opts.timeout, nforks=2)
+results = fc.process.info("axw")
+
+processes = {}
+for n in [host1, host2]:
+    processes[n] = set([])
+    if is_error(results[n]):
+        print 'Error from %s' % n
+        print items
+        sys.exit(1)
+        
+    for items in results[n]:
+        if not items:
+            continue
+        comm = ' '.join(items[4:])
+        processes[n].add(comm)
+        
+host1diff = processes[host1].difference(processes[host2])
+host2diff = processes[host2].difference(processes[host1])
+
+print 'Processes running on %s not on %s' % (host1, host2)
+print '\n'.join(host1diff)
+
+print '\nProcesses running on %s not on %s' % (host2, host1)
+print '\n'.join(host2diff)
+
+
+

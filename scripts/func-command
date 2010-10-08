@@ -1,0 +1,43 @@
+#!/usr/bin/python -tt
+# by skvidal
+# gplv2+
+
+
+import sys
+import func.overlord.client
+from func.overlord.scripts import base_func_parser, handle_base_func_options
+from func.utils import is_error
+
+parser = base_func_parser(outputpath=False)
+opts, args, parser = parse_args(sys.argv[1:])
+opts = handle_base_func_options(parser, opts)
+
+if len(args) < 1:
+    print parser.format_help()
+    sys.exit(1)
+
+mycmd = ' '.join(args)
+
+hosts ='*'
+if opts.host:
+    hosts = ';'.join(opts.host)
+
+fc = func.overlord.client.Client(hosts, timeout=opts.timeout, nforks=opts.forks)
+
+print mycmd
+results = fc.command.run(mycmd)
+for (hn, output) in results.items():
+    if is_error(output):
+        msg = 'Error: %s: ' % hn
+        for item in output[1:3]:
+            if type(item) == type(''):
+                msg += ' %s' % item
+        print >> sys.stderr, msg 
+        continue
+
+    # FIXME - maybe for commands don't do it one line with hostname first
+
+    print '%s' % hn
+    print output[1]
+    print ''
+    

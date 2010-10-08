@@ -1,0 +1,66 @@
+#!/usr/bin/python -tt
+# by skvidal
+# gplv2+
+
+import sys
+import func.overlord.client
+from optparse import OptionParser
+
+def parse_args(args):
+    parser = OptionParser(version = "1.0")
+    parser.add_option('--host', default=[], action='append',
+               help="hosts to act on, defaults to ALL")
+    parser.add_option('--timeout', default=30, type='int',
+               help='set the wait timeout for func commands')
+    parser.add_option('--forks', default=40, type='int',
+               help='set the number of forks to start up')
+    parser.add_option('--hosts-from-file', default=None, dest="hostfile",
+               help="read list of hosts from this file, if '-' read from stdin")
+    (opts, args) = parser.parse_args(args)
+
+    if opts.hostfile:
+        hosts = []
+        if opts.hostfile == '-':
+            hosts = sys.stdin.readlines()
+        else:
+            hosts = open(opts.hostfile, 'r').readlines()
+        
+        for hn in hosts:
+            hn = hn.strip()
+            if hn.startswith('#'):
+                continue
+            hn = hn.replace('\n', '')
+            opts.host.append(hn)
+
+    return opts, args, parser
+
+
+opts, args, parser = parse_args(sys.argv[1:])
+hosts ='*'
+if opts.host:
+    hosts = ';'.join(opts.host)
+
+fc = func.overlord.client.Client(hosts, timeout=opts.timeout, nforks=opts.forks)
+
+results = fc.system.list_modules()
+hosts_to_scan = []
+for (hn, mods) in results.items():
+    if 'virt' in mods:
+        hosts_to_scan.append(hn)
+
+fc = func.overlord.client.Client(';'.join(hosts_to_scan), timeout=opts.timeout, nforks=len(hosts_to_scan))
+results = fc.virt.list_vms()
+vms_per_host = {}
+
+for (hn, vms) in results.items():
+    vms_per_host[hn] = []
+    for vm in vms:
+        if vm == 'Domain-0':
+            continue
+        vms_per_host[hn].append(vm)
+
+for hn in sorted(vms_per_host.keys()):
+    if vms_per_host[hn]:
+        for vm in sorted(vms_per_host[hn]):
+            print '%s:%s' % (hn, vm)
+        

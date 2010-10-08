@@ -75,6 +75,14 @@ rm -fr $RPM_BUILD_ROOT
 %{_bindir}/func-create-module
 %{_bindir}/func-transmit
 %{_bindir}/func-build-map
+%{_bindir}/func-command
+%{_bindir}/func-down-hosts
+%{_bindir}/func-find-user
+%{_bindir}/func-grep
+%{_bindir}/func-list-vms-per-host
+%{_bindir}/func-ps-compare
+%{_bindir}/func-whatsmyname
+%{_bindir}/func-yum
 %{_bindir}/func-group
 #%{_bindir}/update-func
 
@@ -174,6 +182,9 @@ fi
 
 
 %changelog
+* Fri Oct  8 2010 Seth Vidal <skvidal at fedoraproject.org> - 0.27-2
+- add func-commands and func-yum
+
 * Wed Aug 25 2010 Seth Vidal <skvidal at fedoraproject.org> - 0.27-1
 - bump to 0.27
 
