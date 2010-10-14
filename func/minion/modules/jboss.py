@@ -36,7 +36,7 @@ class JBoss(func_module.FuncModule):
         """  
         processo = process.ProcessModule()
         results = processo.info("ax") 
-		
+    
         logging = logger.Logger().logger
         output = []
         for items in results:
@@ -59,8 +59,8 @@ class JBoss(func_module.FuncModule):
                     output.append((int(items[0]),instance,address,[]))
 
         # Retrieve information about network (netstat -tupln)
-	net_status = networktest.NetworkTest()
-	results = net_status.netstat("-tupln")
+        net_status = networktest.NetworkTest()
+        results = net_status.netstat("-tupln")
 
         for string in results:
             address = None
@@ -73,7 +73,7 @@ class JBoss(func_module.FuncModule):
             except:
                 address_port = None
                 pid_name = None
-	    
+    
             if address_port != None:
                 try:
                     address = address_port.split(":")[0]
@@ -131,8 +131,8 @@ class JBoss(func_module.FuncModule):
             data = self.status()
         else:
             data = status
-	
-	port = int(port)	
+
+        port = int(port)
         founded = []
 
         for item in data:
@@ -187,7 +187,7 @@ class JBoss(func_module.FuncModule):
     def start(self):
         '''
            Start a jboss instance 
-	'''
+        '''
         logging = logger.Logger().logger
 
         address=self.options.jboss_address
@@ -196,26 +196,26 @@ class JBoss(func_module.FuncModule):
         jboss_run_path=self.options.jboss_home+"/bin/run.sh"
 
         status=self.status()
-		
+    
         if len(self.search_by_address(address=address, status=status)) != 0:
             return (-1,"Another instances listening on this address, ")
 
-       	if len(self.search_by_instance(instance=instance, status=status)) != 0:
+        if len(self.search_by_instance(instance=instance, status=status)) != 0:
             return (-1,"This instances is just instanced")
 
         launcher ="sh "+str(jboss_run_path)+" -c "+instance+" -b "+address+" &"
         logging.info(launcher)
 
-	comm = command.Command()
-	comm.run(launcher)
+        comm = command.Command()
+        comm.run(launcher)
         
-	return "OK, instance "+ instance +" started on address "+address
+        return "OK, instance "+ instance +" started on address "+address
 
 
     def stop(self):
         '''
             Stop a jboss instance, It suppose you are using 
-	    use standard JNDI port 1099. 
+            use standard JNDI port 1099. 
         '''
         logging = logger.Logger().logger
 
@@ -228,11 +228,11 @@ class JBoss(func_module.FuncModule):
         if len(data) == 0:
             return (-1, "Istance on "+ address +" not running")
     
-	launcher ="sh "+str(jboss_sd_path)+" -s jnp://"+address+":1099 &"
+        launcher ="sh "+str(jboss_sd_path)+" -s jnp://"+address+":1099 &"
         logging.info(launcher)
 
         comm = command.Command()
-	comm.run(launcher)
+        comm.run(launcher)
 
         return "OK, stopped instance listening address "+address
 

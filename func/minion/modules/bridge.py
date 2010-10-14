@@ -98,8 +98,8 @@ class Bridge(func_module.FuncModule):
                 # exist, append the interface.
                 if not curbr in self.options.ignorebridges:
                     if vifpattern.match(elements[0]) and listvif == False:
-			continue
-		    retlist[curbr].append(elements[0])
+                        continue
+                    retlist[curbr].append(elements[0])
     
         return retlist
 

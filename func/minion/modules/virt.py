@@ -72,7 +72,7 @@ class FuncLibvirtConnection(object):
 
         # this block of code borrowed from virt-manager:
         # get working domain's name
-        ids = conn.listDomainsID();
+        ids = conn.listDomainsID()
         for id in ids:
             vm = conn.lookupByID(id)
             vms.append(vm)
@@ -213,35 +213,35 @@ class Virt(func_module.FuncModule):
         return results
 
     def virttype(self):
-	return self.__get_conn().get_type()
+        return self.__get_conn().get_type()
 
     def autostart(self, vm):
-	self.conn = self.__get_conn()
-	if self.conn.get_type() == "Xen":
-	    autostart_args = [
-		"/bin/ln",
-		"-s",
-		"/etc/xen/%s" % vm,
-		"/etc/xen/auto"
-	    ]
+        self.conn = self.__get_conn()
+        if self.conn.get_type() == "Xen":
+            autostart_args = [
+            "/bin/ln",
+            "-s",
+            "/etc/xen/%s" % vm,
+            "/etc/xen/auto"
+            ]
         else:
             # When using KVM, we need to make sure the autostart
             # directory exists
-	    mkdir_args = [
-		"/bin/mkdir",
-		"-p",
-		"/etc/libvirt/qemu/autostart"
-	    ]
+            mkdir_args = [
+            "/bin/mkdir",
+            "-p",
+            "/etc/libvirt/qemu/autostart"
+            ]
             sub_process.call(mkdir_args,shell=False,close_fds=True)
 
             # We aren't using virsh autostart because we want
             # the command to work even when the VM isn't running
-	    autostart_args = [
-		"/bin/ln",
-		"-s",
-		"/etc/libvirt/qemu/%s.xml" % vm,
-		"/etc/libvirt/qemu/autostart/%s.xml" % vm
-	    ]
+            autostart_args = [
+            "/bin/ln",
+            "-s",
+            "/etc/libvirt/qemu/%s.xml" % vm,
+            "/etc/libvirt/qemu/autostart/%s.xml" % vm
+            ]
 
         return sub_process.call(autostart_args,shell=False,close_fds=True)
 
@@ -383,86 +383,87 @@ class Virt(func_module.FuncModule):
 
     def get_xml(self, vmid):
         """
-	Recieve a Vm id as input
+        Recieve a Vm id as input
         Return an xml describing vm config returned by a libvirt call
-	"""
-	conn = libvirt.openReadOnly(None)
-	if conn == None:
-		return (-1,'Failed to open connection to the hypervisor')
-	try:
-		domV = conn.lookupByName(vmid)
-	except:
-		return (-1,'Failed to find the main domain')
-	return domV.XMLDesc(0)
+        """
+        conn = libvirt.openReadOnly(None)
+        if conn == None:
+            return (-1,'Failed to open connection to the hypervisor')
+        try:
+            domV = conn.lookupByName(vmid)
+        except:
+            return (-1,'Failed to find the main domain')
+        return domV.XMLDesc(0)
 
 
     def get_graphics(self,vmid,xml='None'):
-	"""
-	Recieve a Vm id as input
-	Read machine informations from xml config,
-	return a key/val map containing only graphics properties
-	"""
-	out = {'autoport': 'None', 'keymap': 'None', 'type': 'vnc', 'port': 'None', 'listen': 'None'}
-	if(xml=='None'):
-	    xml = self.get_xml(vmid)
-	else:
-	    xml = "<domain>\n"+xml+"\n</domain>"
-	ssock = StringIO.StringIO(xml)
-	doc = minidom.parse(ssock)
-	for node in doc.getElementsByTagName("domain"):
-	    graphics = node.getAttribute("devices")
-	    L = node.getElementsByTagName("graphics")
-	    for node2 in L:
-		for k in node2.attributes.keys():
-		    out[k] = node2.getAttribute(k)
-	return out
+        """
+        Recieve a Vm id as input
+        Read machine informations from xml config,
+        return a key/val map containing only graphics properties
+        """
+        out = {'autoport': 'None', 'keymap': 'None', 'type': 'vnc', 'port': 'None', 'listen': 'None'}
+        if(xml=='None'):
+            xml = self.get_xml(vmid)
+        else:
+            xml = "<domain>\n"+xml+"\n</domain>"
+        ssock = StringIO.StringIO(xml)
+        doc = minidom.parse(ssock)
+        for node in doc.getElementsByTagName("domain"):
+            graphics = node.getAttribute("devices")
+            L = node.getElementsByTagName("graphics")
+            for node2 in L:
+                for k in node2.attributes.keys():
+                    out[k] = node2.getAttribute(k)
+        return out
 
 
     def set_graphics(self,vmid,xml):
-	"""
-	Recieve a Vm id and a piece of xml as input
-	Set vnc address and parameters of vm in xml config file
-	Return 0 if config has been correctly written
-	"""
-	try:
-	   conn = libvirt.openReadOnly(None)
-	   tmp = conn.getType()
-	except:
-	   return (-1,'Failed to open connection to the hypervisor')
-	strxml = self.get_graphics(vmid,xml)
-	str = "vfb = [ \"vncunused=1, "
+        """
+        Recieve a Vm id and a piece of xml as input
+        Set vnc address and parameters of vm in xml config file
+        Return 0 if config has been correctly written
+        """
+        try:
+            conn = libvirt.openReadOnly(None)
+            tmp = conn.getType()
+        except:
+            return (-1,'Failed to open connection to the hypervisor')
+        strxml = self.get_graphics(vmid,xml)
+        str = "vfb = [ \"vncunused=1, "
 
-	for el in strxml:
-	    if(strxml[el] != 'None'):
-		if(el == 'port'):
-		    str = "%s%s=\'%s\', " % (str,"vncdisplay",(int(strxml[el])-5900))
-		else:
-		    str = "%s%s=\'%s\', " % (str,el,strxml[el])
-	str = "%s\" ]" % str.rstrip(' ').rstrip(',')
+        for el in strxml:
+            if(strxml[el] != 'None'):
+                if(el == 'port'):
+                    str = "%s%s=\'%s\', " % (str,"vncdisplay",(int(strxml[el])-5900))
+                else:
+                    str = "%s%s=\'%s\', " % (str,el,strxml[el])
+        str = "%s\" ]" % str.rstrip(' ').rstrip(',')
 
-	if(tmp == "Xen"):
-	    if os.path.exists("/etc/xen/%s" % vmid):
-		return os.system("sed -i 's/^vfb.*/%s/g' /etc/xen/%s" % (str,vmid))
-	    else:
-		return (-1,'Config file /etc/xen/%s not found' % vmid)
-	else:
-	    if os.path.exists("/etc/libvirt/qemu/%s.xml" % vmid):
-		xml = self.get_xml(vmid)
-		ssock = StringIO.StringIO(xml)
-		doc = minidom.parse(ssock)
-		for node in doc.getElementsByTagName("domain"):
-		    graphics = node.getAttribute("devices")
-		    L = node.getElementsByTagName("graphics")
-		    for node2 in L:
-			for el in strxml:
+        if(tmp == "Xen"):
+            if os.path.exists("/etc/xen/%s" % vmid):
+                return os.system("sed -i 's/^vfb.*/%s/g' /etc/xen/%s" % (str,vmid))
+            else:
+                return (-1,'Config file /etc/xen/%s not found' % vmid)
+        else:
+            if os.path.exists("/etc/libvirt/qemu/%s.xml" % vmid):
+                xml = self.get_xml(vmid)
+                ssock = StringIO.StringIO(xml)
+                doc = minidom.parse(ssock)
+                for node in doc.getElementsByTagName("domain"):
+                    graphics = node.getAttribute("devices")
+                    L = node.getElementsByTagName("graphics")
+                    for node2 in L:
+                        for el in strxml:
                             if(strxml[el] != 'None'):
                                 node2.setAttribute(el,strxml[el])
-		output_xml = open("/etc/libvirt/qemu/%s.xml" % vmid, 'w')
-		output_xml.write(node.toxml())
-		return 0
-	    else:
-		return (-1,'Config file /etc/libvirt/qemu/%s.xml not found' % vmid)
-	return (-2,'Unmatched Condition in set_graphics method')
+            
+                output_xml = open("/etc/libvirt/qemu/%s.xml" % vmid, 'w')
+                output_xml.write(node.toxml())
+                return 0
+            else:
+                return (-1,'Config file /etc/libvirt/qemu/%s.xml not found' % vmid)
+        return (-2,'Unmatched Condition in set_graphics method')
 
     def set_vcpus(self, vmid, num):
         """

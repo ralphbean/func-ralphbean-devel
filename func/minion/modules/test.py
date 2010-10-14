@@ -67,12 +67,12 @@ class Test(func_module.FuncModule):
         return self.config_items()
 
     def config_save(self):
-	"""
-	Saves the options config
-	"""
-	self.save_config()
+        """
+        Saves the options config
+        """
+        self.save_config()
         # lame, need to convert the object into a marshaable ds
-	return self.config_items()
+        return self.config_items()
 
     def config_set(self, key_name, value):
         setattr(self.options,key_name, value)
@@ -80,10 +80,10 @@ class Test(func_module.FuncModule):
         return self.config_items()
 
     def config_get(self, key_name):
-	return getattr(self.options, key_name)
+        return getattr(self.options, key_name)
 
     def config_get_test(self):
-	return self.options.testvalue
+        return self.options.testvalue
 
     def register_method_args(self):
         """

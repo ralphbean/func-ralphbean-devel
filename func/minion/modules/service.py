@@ -25,8 +25,8 @@ class Service(func_module.FuncModule):
     description = "Allows for service control via func."
 
     def __command(self, service_name, command):
-	
-	service_name = service_name.strip() # remove useless spaces
+    
+        service_name = service_name.strip() # remove useless spaces
 
         filename = os.path.join("/etc/rc.d/init.d/",service_name)
         if os.path.exists(filename):
@@ -92,14 +92,14 @@ class Service(func_module.FuncModule):
         results = []
         for line in data.split("\n"):
             if line.find("0:") != -1:
-               # regular services
-               tokens = line.split()
-               results.append((tokens[0],tokens[1:]))
+                # regular services
+                tokens = line.split()
+                results.append((tokens[0],tokens[1:]))
             elif line.find(":") != -1 and not line.endswith(":"):
-               # xinetd.d based services
-               tokens = line.split()
-               tokens[0] = tokens[0].replace(":","")
-               results.append((tokens[0],tokens[1]))
+                # xinetd.d based services
+                tokens = line.split()
+                tokens[0] = tokens[0].replace(":","")
+                results.append((tokens[0],tokens[1]))
         return results
 
     def get_running(self):
