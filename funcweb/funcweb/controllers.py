@@ -8,16 +8,16 @@ from funcweb.widget_validation import WidgetSchemaFactory
 from funcweb.async_tools import AsyncResultManager
 from func.jobthing import purge_old_jobs,JOB_ID_RUNNING,JOB_ID_FINISHED,JOB_ID_PARTIAL
 from func.utils import is_error
-# it is assigned into method_display on every request 
-global_form = None 
+# it is assigned into method_display on every request
+global_form = None
 
 ####**NOTE : All flash messages are used for error and some weird sitaution's reporting be careful when using
 #that turbogears functionality !
 
 def validate_decorator_updater(validator_value=None):
     """
-    When we pass the global_form directly to 
-    turbogears.validate it is not updated on 
+    When we pass the global_form directly to
+    turbogears.validate it is not updated on
     every request we should pass a callable
     to trigger it ;)
 
@@ -26,7 +26,7 @@ def validate_decorator_updater(validator_value=None):
     because we compute the global_form in the method_display
 
     @return : the current form and schema to validate the
-    current input in cherrypy's request 
+    current input in cherrypy's request
     """
     global global_form
     return global_form
@@ -34,7 +34,7 @@ def validate_decorator_updater(validator_value=None):
 class Funcweb(object):
     #preventing the everytime polling and getting
     #func = Overlord("name") thing
-    func_cache={          
+    func_cache={
                 'fc_object':None,#the fc = Overlord() thing,
                 'fc_async_obj':None,
                 'glob':None,
@@ -51,12 +51,12 @@ class Funcweb(object):
 
     def get_current_minion_list(self,glob):
         """
-        That method will not be reachable from web interface it just 
-        a util method that gives back the current minion list back, 
+        That method will not be reachable from web interface it just
+        a util method that gives back the current minion list back,
         we use that minion glob form in lots of places so it is a hack
         to avoid writing stupid code again and again :)
         """
-        
+
         if self.func_cache['glob'] == glob:
             minions = self.func_cache['minions']
         else:
@@ -68,7 +68,7 @@ class Funcweb(object):
             except Exception,e:
                 #TODO log here
                 minions = []
-        
+
         return minions
 
     @expose(allow_json=True)
@@ -76,7 +76,7 @@ class Funcweb(object):
     def minions(self, glob='*',submit=None):
         """ Return a list of our minions that match a given glob """
         #make the cache thing
-        minions = self.get_current_minion_list(glob) 
+        minions = self.get_current_minion_list(glob)
         if not submit:
             return dict(minions=minions,submit_adress="/funcweb/minions",tg_template="funcweb.templates.index")
         else:
@@ -108,7 +108,7 @@ class Funcweb(object):
 
             #should also reset the other fields or not ?
 
-        
+
         if not module:
             if not self.func_cache['modules']:
                 try :
@@ -117,7 +117,7 @@ class Funcweb(object):
                         #TODO put logger here!
                         flash("Some exception while getting the module list for %s minion"%(name))
                         return dict()
-                        
+
                 except Exception,e:
                     flash("Some exception while getting the module list for %s minion"%(name))
                     #it is an error case
@@ -137,15 +137,15 @@ class Funcweb(object):
 
                 #put it into the cache to make that slow thing faster
                 self.func_cache['modules']=display_modules
-                
+
             else:
                 #print "Im in the cache"
                 #just list those who have get_method_args
                 display_modules = self.func_cache['modules']
-            
+
             modules = {}
             modules[name]=display_modules
-          
+
             return dict(modules=modules,tg_template = "funcweb.templates.modules")
         else: # a module is specified
             if not method: # return a list of methods for specified module
@@ -171,7 +171,7 @@ class Funcweb(object):
                             if not m in registered_methods:
                                 mods.remove(m)
 
-                    #store into cache if we get it again 
+                    #store into cache if we get it again
                     self.func_cache['methods'] = modules
                 #display em
                 return dict(modules=modules, module=module,
@@ -186,7 +186,7 @@ class Funcweb(object):
         """
         That method generates the input widget for givent method.
         """
-        
+
         global global_form
         if self.func_cache['minion_name'] == minion:
             fc = self.func_cache['fc_object']
@@ -276,9 +276,9 @@ class Funcweb(object):
         return dict(message=msg, previous_url=previous_url, logging_in=True,
                     original_parameters=request.params,
                     forward_url=forward_url)
-        
-    
-    @expose() 
+
+
+    @expose()
     @identity.require(identity.not_anonymous())
     def handle_minion_error(self,tg_errors=None):
         """
@@ -290,7 +290,7 @@ class Funcweb(object):
         if tg_errors:
             #print tg_errors
             return str(tg_errors)
-        
+
 
     @expose(allow_json=True)
     @error_handler(handle_minion_error)
@@ -336,9 +336,9 @@ class Funcweb(object):
             except Exception,e:
                 flash("Encountered some error when trying to get method arguments for %s.%s.%s"%(minion,module,method))
                 return dict()
-            #so we know the order just allocate and put them there 
+            #so we know the order just allocate and put them there
             cmd_args=[]
-           
+
             #firstly create a better dict to lookup
             sorted_args = {}
             for arg in kw.keys():
@@ -362,7 +362,7 @@ class Funcweb(object):
                         cmd_args.append(list_arg)
                 else:
                     cmd_args.append(current_argument)
-          
+
             #print "The list to be send is : ",cmd_args
             #now execute the stuff
             #at the final execute it as a multiple if the glob suits for that
@@ -371,25 +371,25 @@ class Funcweb(object):
             try:
                 if self.func_cache['glob']:
                     fc_async = Overlord(self.func_cache['glob'],async=True)
-            
+
                 result_id = getattr(getattr(fc_async,module),method)(*cmd_args)
                 result = "".join(["The id for current job is :",str(result_id)," You will be notified when there is some change about that command !"])
-            
+
             except Exception,e:
                 flash("We got some error while trying to send command for %s.%s.%s"%(module,minion,method))
                 return dict()
-            
+
             #TODO reformat that returning string to be more elegant to display :)
             return str(result)
 
         else:
             return "Missing arguments sorry can not proceess the form"
-    
+
     @expose(template="funcweb.templates.result")
     @identity.require(identity.not_anonymous())
     def execute_link(self,minion=None,module=None,method=None):
         """
-        Method is fot those minion methods that dont accept any 
+        Method is fot those minion methods that dont accept any
         arguments so they provide only some information,executed
         by pressing only the link !
         """
@@ -429,9 +429,9 @@ class Funcweb(object):
         if not check_change :
             msg = "Method invoked with False parameter which makes it useless"
             return dict(changed = False,changes = [],remote_error=msg)
-        
+
         if not self.async_manager:
-            #cleanup tha database firstly 
+            #cleanup tha database firstly
             purge_old_jobs()
             self.async_manager = AsyncResultManager()
         changes = self.async_manager.check_for_changes()
@@ -440,10 +440,10 @@ class Funcweb(object):
                 changed = True
             else:
                 self.first_run = False
-        
+
         return dict(changed = changed,changes = changes)
 
-    
+
     @expose(format = "json")
     @identity.require(identity.not_anonymous())
     def check_job_status(self,job_id):
@@ -461,12 +461,12 @@ class Funcweb(object):
                 #store also into the cache
             else:
                 fc_async = Overlord("*",async=True)
-            
+
             self.func_cache['fc_async_obj'] = fc_async
 
         else:
             fc_async = self.func_cache['fc_async_obj']
-        
+
         try:
             id_result = fc_async.job_status(job_id)
             #parse the comming data in a better looking way :)
@@ -496,9 +496,9 @@ class Funcweb(object):
         else:
             #make a refresh of the memory copy
             self.async_manager.refresh_list()
-        #get the actual db    
+        #get the actual db
         func_db = self.async_manager.current_db()
-        
+
         for job_id,code_status_pack in func_db.iteritems():
             parsed_job_id = job_id.split("-")
             func_db[job_id].extend(parsed_job_id)
@@ -509,12 +509,12 @@ class Funcweb(object):
     @expose()
     def logout(self):
         """
-        The logoout part 
+        The logoout part
         """
         identity.current.logout()
         raise redirect("/")
- 
-################################ Groups API methods here #############################    
+
+################################ Groups API methods here #############################
     @expose(template="funcweb.templates.groups_main")
     @identity.require(identity.not_anonymous())
     def groups_main(self):
@@ -563,7 +563,7 @@ class Funcweb(object):
         copy_group_name = copy(group_name)
         if not group_name.startswith('@'):
             group_name = "".join(["@",group_name.strip()])
-       
+
         try:
             minion_api = Minions("*")
             hosts = minion_api.group_class.get_hosts_by_group_glob(group_name)
@@ -573,7 +573,7 @@ class Funcweb(object):
             flash("We encountered some error while getting host list for %s "%(copy_group_name))
             return dict()
 
-        #store the current group_name in cache variable 
+        #store the current group_name in cache variable
         self.group_name = copy_group_name
         return dict(hosts = hosts,all_minions = all_minions,group_name = copy_group_name,submit_adress="/funcweb/filter_group_minions")
 
@@ -588,10 +588,10 @@ class Funcweb(object):
         hosts = []
         if not kw.has_key('group_name') or not kw.has_key('action_name'):
             return dict(hosts =hosts,group_name = None)
-        
+
         current_host_list = None
 
-        #if we are adding some hosts 
+        #if we are adding some hosts
         if kw['action_name'] == "add":
             if not kw.has_key('checkminion'):
                 return dict(hosts =hosts,group_name = kw['group_name'])
@@ -605,7 +605,7 @@ class Funcweb(object):
             hosts.extend(current_host_list.split(","))
         else:
             hosts.extend(current_host_list)
-        
+
         if kw['action_name'] == "add":
             minion_api.group_class.add_host_list(kw['group_name'],hosts,save = True)
         else:#remove them
@@ -616,17 +616,17 @@ class Funcweb(object):
         group_name = copy(kw['group_name'])
         if not group_name.startswith('@'):
             group_name = "".join(["@",group_name.strip()])
-        
+
         hosts = minion_api.group_class.get_hosts_by_group_glob(group_name)
         return dict(hosts =hosts,group_name = kw['group_name'])
-    
+
     @expose(allow_json=True)
     @identity.require(identity.not_anonymous())
     def filter_group_minions(self,glob='*',submit=None):
         """ Return a list of our minions that match a given glob """
         #make the cache thing
 
-        minions = self.get_current_minion_list(glob) 
+        minions = self.get_current_minion_list(glob)
         if submit:
             return dict(all_minions=minions,submit_adress="/funcweb/filter_group_minions",tg_template="funcweb.templates.minion_small",group_name= self.group_name)
         else:
@@ -636,10 +636,10 @@ class Funcweb(object):
 
 ############################# END of GROUPS API METHODS ############################
 class Root(controllers.RootController):
-    
+
     @expose()
     def index(self):
         raise redirect("/funcweb")
-    
+
     index = index # start with our minion view, for now
     funcweb = Funcweb()

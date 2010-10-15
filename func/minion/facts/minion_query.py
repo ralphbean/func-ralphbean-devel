@@ -6,14 +6,14 @@ class FactsMinion(object):
     That class wil be responsible for:
         1. De-serialization of the query by converting
         it to a Q structure.
-        
+
         2. Calling the ( prewritten ) 'facts' modules
     """
     VALID_QUERY_KEYS = ["AND","OR","NOT"]
 
     def __init__(self,fact_query=None,method_fact_list=None):
         """
-        Constructor 
+        Constructor
 
         @type  fact_query : FuncLogicQuery
         @param fact_query : FuncLogicQuery that will be produced from that class if
@@ -35,7 +35,7 @@ class FactsMinion(object):
         modules...
 
         @type  q_list : list
-        @param q_list : Query list 
+        @param q_list : Query list
         """
         q_result = self.__traverse_deserialize(q_list)
         if not self.fact_query:
@@ -57,7 +57,7 @@ class FactsMinion(object):
         @type  q_list : list
         @param q_list : Query list
         @type  include_results : boolean
-        @param include_results : As it is known the main purpose 
+        @param include_results : As it is known the main purpose
                                  of facts is to return True or False
                                  but sometimes we need the real result
                                  also included.
@@ -81,26 +81,26 @@ class FactsMinion(object):
         modules. If you need change in calling fact methods that is
         the place to go .
 
-        @type  overlord_tuple : Tuple 
+        @type  overlord_tuple : Tuple
         @param overlord_tuple : A tuple in format of (factname__factoperation,compared_value)
         """
         keyword_tuple = overlord_tuple[0].split("__")
         overlord_value = overlord_tuple[1]
-     
+
         if len(keyword_tuple) > 1:
             keyword = keyword_tuple[1]
         else:
             keyword = ""
         fact_name = keyword_tuple[0]
-        
+
         if not self.method_fact_list.has_key(fact_name):
             raise MinionQueryError("None existing Fact method or tag required %s "%fact_name)
-       
+
         fact_value = self.method_fact_list[fact_name]()
 
         #we have the result with fact now it is time to resolve it
         logic_fact = self.keyword_query.resolve(keyword,overlord_value,fact_value)
-       
+
         #the return part is a tuple (logic_Value which is True or False and fact_name and value dictionary )
         return (logic_fact,{fact_name:fact_value})
 
@@ -109,21 +109,21 @@ class FactsMinion(object):
         The private recursive part that traverses
         the incoming overlord list (included with facts)
         and produces a Q object query object from it.
-        **(heavy recursive code)Caution any change here 
+        **(heavy recursive code)Caution any change here
         can make facts not tobe deserialized correctly so
         that will break the facts API.
 
         @type  : list
         @param : List of overlord incoming facts query
                  something like :[NOT,[AND,[a,TRUE,b,FALSE]]]
- 
+
         @return : Q object returned
         """
 
         q_object = None
         #lets try divide and conquer :)
         #assume that it is [NOT,[AND,[a,TRUE,b,FALSE]]]
-        
+
         #print "The traverse object at start is ",traverse_object
         tmp_negated = False
         tmp_connector ="AND"
@@ -155,7 +155,7 @@ class FactsMinion(object):
                         q_object = q_object & Q(tuple(traverse_object[ch:ch+2]))
             if tmp_negated:
                 q_object =  ~q_object
-                
+
 
                 #print "IN children Q object is ",q_object
             traverse_object = []
@@ -163,13 +163,13 @@ class FactsMinion(object):
             #raw_input()
 
         if traverse_object:
-            
+
             #print "The traverse object at end is ",traverse_object
             #raw_input()
             for t_o in traverse_object:
                 #print "The traverse object at end is ",t_o
                 #raw_input()
-                
+
                 tmp_q = self.__traverse_deserialize(t_o)
                 #print "I ADD THAT TO THE ALL ",tmp_q
                 #print "WILL BE ADDED TO  ",q_object
@@ -187,7 +187,7 @@ class FactsMinion(object):
 
         return q_object
 
-        
+
 
 FACTS_MODULES = "func/minion/facts/modules/"
 from func.module_loader import load_modules
@@ -211,13 +211,13 @@ def load_fact_methods(abort_on_conflict = False):
         if res:
             return {'__conflict__':res}
 
-    #get the fact methods 
+    #get the fact methods
     return fact_methods
 
 
 class QueryKeyword(object):
     """
-    That class is for resolving incoming keywords and 
+    That class is for resolving incoming keywords and
     doing comparison stuff (the core part of the facts)
 
     Ex: query_ob.filter(uname__contains="f9") the contains
@@ -237,10 +237,10 @@ class QueryKeyword(object):
         @type  keyword : string
         @param keyword : The name of the method that will be called
                          Ex: contains,icontains ...
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -252,10 +252,10 @@ class QueryKeyword(object):
         """
         If the overlord value that comes from client is
         not the same as facts we should do some convention ..
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -267,12 +267,12 @@ class QueryKeyword(object):
 
     def keyword_contains(self,overlord_value,fact_value):
         """
-        A simple method for contains, which checks if the 
+        A simple method for contains, which checks if the
         fact_value contains the overlord_value
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -282,15 +282,15 @@ class QueryKeyword(object):
             return False
         else:
             return True
-        
+
     def keyword_icontains(self,overlord_value,fact_value):
         """
-        A simple method for contains, which checks if the 
+        A simple method for contains, which checks if the
         fact_value contains the overlord_value (case insensitive)
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -303,10 +303,10 @@ class QueryKeyword(object):
     def keyword_iexact(self,overlord_value,fact_value):
         """
         Looks for an iexact match
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -318,10 +318,10 @@ class QueryKeyword(object):
     def keyword_startswith(self,overlord_value,fact_value):
         """
         A typical python starts with keyword implementation
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -333,10 +333,10 @@ class QueryKeyword(object):
     def keyword_gt(self,overlord_value,fact_value):
         """
         A greater keyword
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -345,14 +345,14 @@ class QueryKeyword(object):
         else:
             return False
 
-    
+
     def keyword_gte(self,overlord_value,fact_value):
         """
         A greater keyword
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -361,14 +361,14 @@ class QueryKeyword(object):
             return True
         else:
             return False
-    
+
     def keyword_lt(self,overlord_value,fact_value):
         """
         A less keyword
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -376,14 +376,14 @@ class QueryKeyword(object):
             return True
         else:
             return False
-        
+
     def keyword_lte(self,overlord_value,fact_value):
         """
         A less equal keyword
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """
@@ -391,14 +391,14 @@ class QueryKeyword(object):
             return True
         else:
             return False
-    
+
     def keyword_(self,overlord_value,fact_value):
         """
         A == keyword the default behaviour
-        
+
         @type  overlord_value : string
         @param overlord_value : Users value that he compares with system
-        
+
         @type  fact_value : string
         @param fact_value : The system fact value
         """

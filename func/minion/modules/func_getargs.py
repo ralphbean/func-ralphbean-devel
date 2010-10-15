@@ -14,21 +14,21 @@ import sys
 import inspect
 import func_module
 
-class getArgs(func_module.FuncModule): 
-    version = "0.0.1" 
-    api_version = "0.0.1" 
+class getArgs(func_module.FuncModule):
+    version = "0.0.1"
+    api_version = "0.0.1"
     description = "Get args of methods of the class in a func module"
 
-    def get(self, modname, methodname): 
+    def get(self, modname, methodname):
         """Returns a list of args for the specified method in the class of a func module.
         This is useful when register_method_args is not defined (or not properly)
-        """ 
+        """
         vtuple=pv()
         pyver=vtuple[0]+'.'+vtuple[1]
-        sys.path.append('/usr/lib/python'+pyver+'/site-packages/func/minion/modules/') 
+        sys.path.append('/usr/lib/python'+pyver+'/site-packages/func/minion/modules/')
         the_mod=__import__(modname)
 
-        name,data=inspect.getmembers(the_mod, inspect.isclass)[0] 
+        name,data=inspect.getmembers(the_mod, inspect.isclass)[0]
         the_class=modname+'.'+name
 
         c=getattr(the_mod, name)
@@ -55,4 +55,3 @@ class getArgs(func_module.FuncModule):
                 'description':'Returns a list with the args of the method you checked'
                     }
                 }
-

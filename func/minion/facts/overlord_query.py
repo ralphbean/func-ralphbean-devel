@@ -13,10 +13,10 @@ def display_active_facts(result,with_facts=False):
                         that should be True,but it may make sense for
                         Python API only .
     """
-    
+
     if type(result) != dict:
         return result
-    
+
     final_display = {}
     for minion_name,minion_result in result.iteritems():
 
@@ -49,7 +49,7 @@ class OverlordQuery(object):
         if kwargs.has_key('fact_query'):
             fact_query = kwargs['fact_query']
         self.fact_query = fact_query or FuncLogicQuery()
-        
+
         #print "These are : ",self.overlord
         #print "These are : ",self.fact_query
 
@@ -69,10 +69,10 @@ class OverlordQuery(object):
 
         @type  q_object : FuncLogicQuery
         @param q_object : FuncLogicQuery
-        
+
         @return : list of fact logic
         """
-        results=[] 
+        results=[]
         for n in q_object.children:
             if not type(n) == tuple and not type(n) == list:
                 if n.negated:
@@ -85,18 +85,15 @@ class OverlordQuery(object):
                     results.append(n[ch:ch+2])
 
         return results
-    
+
     def display_active(self,result,with_facts=False):
         """
         Get active ones only
-        
+
         @type  with_facts : boolean
         @param with_facts : If you want to see the incoming fact values
                         that should be True,but it may make sense for
                         Python API only .
         """
-        
+
         return display_active_facts(result,with_facts)
-
-
-

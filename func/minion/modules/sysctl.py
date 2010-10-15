@@ -37,15 +37,15 @@ class SysctlModule(func_module.FuncModule):
         """
         results = {self.list:[]}
         sys_res = self.list()#the ist fo sysctl
-        
+
         for res in sys_res:
             if res.lower().find(word)!=-1:
                 results[self.list].append(res)
-        
+
         return results
     grep = func_module.findout(grep)
 
-            
+
     def register_method_args(self):
         """
         Implementing the method argument getter
@@ -78,7 +78,7 @@ class SysctlModule(func_module.FuncModule):
                             'optional':False,
                             'description':"The name value to be set."
                             }
-                    
+
                         },
                     'description':"Use this option when you want to change a sysctl setting"
                     }

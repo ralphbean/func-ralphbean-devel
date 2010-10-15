@@ -6,14 +6,14 @@ import fnmatch
 
 from func.overlord.group.conf_backend import ConfBackend
 from func.overlord.group.sqlite_backend import SqliteBackend
-       
+
 
 TEST_DB_FILE = "/tmp/test_sqlite.db"
 TEST_CONF_FILE = "/tmp/test_conf.conf"
 
 
 class BaseMinions(object):
-    
+
     def create_dummy_minions(self,howmany=None):
         """
         Creates a lots of minions so we can query
@@ -22,7 +22,7 @@ class BaseMinions(object):
 
         cm_config = read_config(CONFIG_FILE, CMConfig)
         howmany = howmany or 100 #it is a good default number
-        
+
         final_list = []
         for m in xrange(howmany):
             tmp_f = open("%s/%s.%s" % (cm_config.certroot,str(m),cm_config.cert_extension),"w")
@@ -48,19 +48,19 @@ class BaseMinions(object):
 
 
 class BaseGroupT(object):
-    
+
     backends = [
                 {'backend':'sqlite','db_file':TEST_DB_FILE},
                 {'backend':'conf','conf_file':TEST_CONF_FILE}
                 ]
-    
+
     def refresh_backend(self,g_object):
         """
         Here you should add your object in if statements
         """
         from func.overlord.group.conf_backend import ConfBackend
         from func.overlord.group.sqlite_backend import SqliteBackend
-       
+
         if isinstance(g_object.backend,ConfBackend):
             return Groups(**self.backends[1])
         elif isinstance(g_object.backend,SqliteBackend):
@@ -72,13 +72,13 @@ class BaseGroupT(object):
         """
         Initializer
         """
-        
+
         gr_list = []
         for b in self.backends:
             gr_list.append(Groups(**b))
 
         return gr_list
-    
+
     def clean_t_files(self,path):
         """
         Clean the initialized stuff
@@ -96,13 +96,13 @@ class TestGroupApi(BaseGroupT,BaseMinions):
         #clean current files
         self.clean_t_files(TEST_DB_FILE)
         self.clean_t_files(TEST_CONF_FILE)
-        
+
         #destroy and create minions
         self.clean_dummy_minions()
         self.current_minions = self.create_dummy_minions()
         #get groups
         self.groups = self.get_group_objects()
-    
+
     def teardown(self):
         """
         Clean the stuff
@@ -110,7 +110,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
         self.clean_dummy_minions()
         self.clean_t_files(TEST_DB_FILE)
         self.clean_t_files(TEST_CONF_FILE)
-        
+
     def test_add_group(self):
         """
         adds a single group item
@@ -120,8 +120,8 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             assert g.add_group("group1")[0] == False
 
-    
-    
+
+
     def test_add_host_to_group(self):
         """
         adds a host test
@@ -133,8 +133,8 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             assert g.add_host_to_group(g_name,"host1")[0] == True
             g = self.refresh_backend(g)
             assert g.add_host_to_group(g_name,"host1")[0] == False
-            
-            
+
+
     def test_add_hostst_to_group(self):
         """
         Test adding hosts via string
@@ -146,7 +146,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g.add_hosts_to_group(g_name,"host1,host2,host3")
             g = self.refresh_backend(g)
             g.add_hosts_to_group(g_name,"host5;host7;host8")
-    
+
     def test_add_host_list(self):
         """
         Test adding hosts via list
@@ -172,7 +172,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g.add_hosts_to_group_glob(g_name,"*") #add all of them
             g = self.refresh_backend(g)
 
-        self.groups = self.get_group_objects()        
+        self.groups = self.get_group_objects()
         for g in self.groups:
             for h in self.current_minions:
                 if self.current_minions.index(h) %10 == 0:
@@ -180,14 +180,14 @@ class TestGroupApi(BaseGroupT,BaseMinions):
                 assert g.add_host_to_group(g_name,h)[0] == False
                 #print "Let see IT ",g.add_host_to_group(g_name,h)[0]
                 g = self.refresh_backend(g)
-       
+
         #clear again so we can test exclude thing
         self.teardown()
         self.setUp()
-        
+
         #print "Testing exclude string ...."
 
-        self.groups = self.get_group_objects()        
+        self.groups = self.get_group_objects()
         for g in self.groups:
             g.add_group(g_name)
             g = self.refresh_backend(g)
@@ -203,7 +203,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
                     assert g.add_host_to_group(g_name,h)[0] == True
                     g = self.refresh_backend(g)
 
-    
+
     def test_get_groups(self):
         """
         test get groups
@@ -216,27 +216,27 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             #get all groups
             grs = g.get_groups()
             assert self._t_compare_arrays(grs,["group1","group2"]) == True
-            
+
             #get one
             tmg = g.get_groups(pattern="group1")
             assert tmg==["group1"]
-            
+
             tmg = g.get_groups(pattern="gr",exact=False)
             assert self._t_compare_arrays(tmg,["group1","group2"])==True
-            
+
             tmg = g.get_groups(pattern="gr",exact=False,exclude=["group2"])
             assert tmg == ["group1"]
-            
+
             #test also an empty one
             tmg = g.get_groups(pattern="group3")
             assert tmg == []
-            
-   
+
+
     def test_get_groups_glob(self):
-       """
-       Globbing in groups
-       """
-       for g in self.groups:
+        """
+        Globbing in groups
+        """
+        for g in self.groups:
             g.add_group("group1")
             g = self.refresh_backend(g)
             g.add_group("group2")
@@ -244,18 +244,18 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             #get all groups
             grs = g.get_groups_glob("*")
             assert self._t_compare_arrays(grs,["group1","group2"]) == True
-            
+
             #get one
             tmg = g.get_groups_glob("*[1]")
             assert tmg == ["group1"]
-            
+
             tmg = g.get_groups_glob("*",exclude_string="*[2]")
             assert tmg == ["group1"]
-            
+
             #test also an empty one
             tmg = g.get_groups_glob("*[3]")
             assert tmg == []
-    
+
     def test_get_hosts(self):
         """
         Get hosts tests
@@ -266,14 +266,14 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             g.add_host_list(g_name,["host1","host2","host3"])
             g = self.refresh_backend(g)
-            
+
             hosts = g.get_hosts(group=g_name)
             assert self._t_compare_arrays(hosts,["host1","host2","host3"]) == True
 
             #get only one
             host = g.get_hosts(pattern="host1",group=g_name)
             assert host == ["host1"]
-            
+
             #get pattern
             host = g.get_hosts(pattern="ho",group=g_name,exact=False)
             assert self._t_compare_arrays(host,["host1","host2","host3"]) == True
@@ -295,10 +295,10 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             g.add_hosts_to_group_glob(g_name,"*") #add all of them
             g = self.refresh_backend(g)
-            
+
             hosts = g.get_hosts_glob("@group1")
             assert self._t_compare_arrays(hosts,self.current_minions) == True
-            
+
             #try subgroupping thing on the fly
             hosts = g.get_hosts_glob("@group1:[0-9]")
             assert self._t_compare_arrays(hosts,list(range(10))) == True
@@ -339,7 +339,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             grs = g.get_groups_glob("*")
             assert grs == []
-    
+
     def test_remove_group_glob(self):
         """
         Remove groups by glob
@@ -354,7 +354,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             grs = g.get_groups_glob("*")
             assert grs == []
-    
+
     def test_remove_host(self):
         """
         remove host test
@@ -365,10 +365,10 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             g.add_host_list(g_name,["host1","host2","host3"])
             g = self.refresh_backend(g)
-            
-            assert g.remove_host(g_name,"host1")[0] == True 
+
+            assert g.remove_host(g_name,"host1")[0] == True
             g = self.refresh_backend(g)
-            assert g.remove_host(g_name,"host1")[0] == False 
+            assert g.remove_host(g_name,"host1")[0] == False
             g = self.refresh_backend(g)
             hosts = g.get_hosts(group=g_name)
             assert self._t_compare_arrays(hosts,["host2","host3"])
@@ -377,7 +377,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             hosts = g.get_hosts(group=g_name)
             assert self._t_compare_arrays(hosts,["host3"])
 
-    
+
     def test_remove_host_list(self):
         """
         Remove the host list
@@ -392,7 +392,7 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             hosts = g.get_hosts(group=g_name)
             assert hosts == ["host3"]
-    
+
     def test_remove_host_glob(self):
         """
         Remove hosts bu glob
@@ -403,12 +403,12 @@ class TestGroupApi(BaseGroupT,BaseMinions):
             g = self.refresh_backend(g)
             g.add_hosts_to_group_glob(g_name,"*") #add all of them
             g = self.refresh_backend(g)
-            
+
             g.remove_host_glob("group1","*")
             g = self.refresh_backend(g)
             hosts = g.get_hosts_glob("@group1")
             assert hosts==[]
-            
+
             g.add_hosts_to_group_glob(g_name,"*") #add all of them
             g = self.refresh_backend(g)
             #try subgroupping thing on the fly
@@ -444,19 +444,19 @@ class TestMinionGroups(BaseMinions):
     """
     Test the minion methods that wraps the group classes
     """
-    
+
     backends = [
                 {'groups_backend':'sqlite','db_file':TEST_DB_FILE},
                 {'groups_backend':'conf','conf_file':TEST_CONF_FILE}
                 ]
-    
+
     def teardown(self):
         for path in [TEST_DB_FILE,TEST_CONF_FILE]:
             if os.path.exists(path):
                 os.remove(path)
-    
+
         self.clean_dummy_minions()
-    
+
     def setUp(self):
         #destroy and create minions
         self.clean_dummy_minions()
@@ -480,7 +480,7 @@ class TestMinionGroups(BaseMinions):
         minions = m.get_hosts_for_spec(spec)
         assert compare_arrays(minions,self.current_minions) == True
 
-    
+
     def test_get_all_hosts(self):
         """
         Getting all hosts
@@ -491,10 +491,10 @@ class TestMinionGroups(BaseMinions):
             #create some groups and hosts into that Minion
             m.group_class.add_group("group1")
             m.group_class.add_hosts_to_group_glob("group1","[0-9]")
-            
+
             hosts = m.get_all_hosts()
             assert compare_arrays(hosts,self.current_minions) == True
-            
+
             #now test with grouping
             m = Minions("[1][0-9];@group1:*",**backend_dict)
             hosts = m.get_all_hosts()
@@ -503,7 +503,7 @@ class TestMinionGroups(BaseMinions):
             m = Minions("[1][0-5];@group1:[5-9]",**backend_dict)
             hosts = m.get_all_hosts()
             assert compare_arrays(hosts,range(5,16)) == True
-            
+
             #do some testing about exclude string
             m = Minions("*",exclude_spec="[1-9][0-9]",**backend_dict)
             hosts = m.get_all_hosts()

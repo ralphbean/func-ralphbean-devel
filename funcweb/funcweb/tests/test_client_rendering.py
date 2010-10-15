@@ -18,7 +18,7 @@ class TestClientWidgetRender(object):
         fc = Overlord(self.minion)
         modules = fc.system.list_modules()
         display_modules={}
-        
+
         print "Getting the modules that has exported arguments"
         for module in modules.itervalues():
             for mod in module:
@@ -40,6 +40,3 @@ class TestClientWidgetRender(object):
                     schema_man=wf.get_ready_schema()
                     minion_form = RemoteFormAutomation(wlist_object,schema_man)
                     print "%s.%s.%s rendered"%(self.minion,module,method_name)
-
-
-

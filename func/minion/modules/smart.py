@@ -52,7 +52,7 @@ class SmartModule(func_module.FuncModule):
         """
         results = {self.info:[]}
         info_res = self.info()[1]
-        
+
         if info_res:
             for res in info_res:
                 if res.lower().find(word)!=-1:

@@ -3,7 +3,7 @@ from func.utils import remove_weird_chars,get_formated_jobid
 from func import jobthing
 import pprint
 import time
-       
+
 def generate_word(type_word,how_many):
     """
     generating some test fuzzy words
@@ -15,10 +15,10 @@ def generate_word(type_word,how_many):
 
     #what you can choose
     ALLOWED_CHARS = ('*','-','_',';','@','.')
-    #may add more later 
+    #may add more later
     ALLOWED_GLOB_WORDS = ("w-e-i-r-d","foo.com","zoom","@group1","g.r.o.u.p.2","some-hey-com","some_hack.org","1212-32323_blippy-zorg","interesting*;o*n*e")
     ALLOWED_MODULE_METHOD_W = ("some_service","s-o-m-e","s_u_m_m_er","FOOO","FoFo","real_stupid-w-e-i-r-d-naME")
-    
+
     final_word = ""
     pickup = []
 
@@ -34,7 +34,7 @@ def generate_word(type_word,how_many):
         else:
             final_word = "".join([final_word,word])
 
-    #return the final word back 
+    #return the final word back
     return final_word
 
 
@@ -114,13 +114,13 @@ class BaseFuncDB(object):
     def test_get_status(self):
         #__get_status(jobid)
         self.enter_some_data(self.new_jobids)
-        
+
         for job in self.new_jobids:
             for job_id,job_pack in job.iteritems():
                 result = jobthing.__dict__['__get_status'](job_id)
                 assert job_pack == result
 
-   
+
     def enter_some_data(self,data):
         """
         We need that one because every func here uses it at the initial stage
@@ -136,11 +136,11 @@ class BaseFuncDB(object):
     def create_an_old_jobid(self):
         #will be overriden
         pass
-    
+
     def create_new_jobid(self):
         #will be overriden
         pass
- 
+
 
 class TestOverlordDB(BaseFuncDB):
     def __init__(self):
@@ -181,16 +181,16 @@ class TestOverlordDB(BaseFuncDB):
             #the stres words :)
             gw=generate_word(choice,4)
             pack[choice] = gw
-            
+
         return get_formated_jobid(**pack)
 
-    
+
     def create_an_old_jobid(self,base_time):
         new_time = self.create_new_jobid().split("-")
         new_time[len(new_time)-1]=str(base_time)
         return "-".join(new_time)
 
-        
+
 
     def test_old_new_upgrade(self):
         #that will do some control if some users has old_ids and
@@ -203,7 +203,7 @@ class TestOverlordDB(BaseFuncDB):
             tmp_hash = {}
             tmp_hash[job_id] = (self.status_opt[randint(0,len(self.status_opt)-1)],{"some_old_type_new.com":self.test_result})
             old_type_new.append(tmp_hash)
-        
+
         #create 5 old type job ids with older  time
         base_time = self.an_old_time
         for n in xrange(5):
@@ -212,7 +212,7 @@ class TestOverlordDB(BaseFuncDB):
             tmp_hash[job_id] = (self.status_opt[randint(0,len(self.status_opt)-1)],{"some_old_type.com":self.test_result})
             old_type_old.append(tmp_hash)
             base_time = base_time + 10
-        
+
         #print "The old type pack is : ",old_type_new
         #print "The old type pack is : ",old_type_old
         #enter also that ids into database
@@ -223,7 +223,7 @@ class TestOverlordDB(BaseFuncDB):
 
         self.enter_some_data(self.new_jobids)
         self.enter_some_data(self.old_jobids)
-        
+
         #db_results = jobthing.get_open_ids()
         #print "The current db results are : ",db_results
 
@@ -236,7 +236,7 @@ class TestOverlordDB(BaseFuncDB):
             for job_id,job_pack in job.iteritems():
                 assert db_results.has_key(job_id) == True
                 assert db_results[job_id] == job_pack[0]
- 
+
 
     def access_update_stress(self):
         """
@@ -251,7 +251,7 @@ class TestOverlordDB(BaseFuncDB):
         print "Entering data test is over"
 
     def access_delete_stress(self):
-        
+
         if not self.new_jobids or not self.old_jobids:
             self.create_lots_of_ids(how_many,self.new_jobids,"old")
             self.create_lots_of_ids(how_many,self.old_jobids,"new")
@@ -260,7 +260,7 @@ class TestOverlordDB(BaseFuncDB):
         print "Old ids were removed succesfully "
 
     def create_lots_of_ids(self,how_many,to_object,type_id):
-        #generates lots of weird named 
+        #generates lots of weird named
         import time
         base_time = self.an_old_time
         for new_id in xrange(how_many):
@@ -282,7 +282,7 @@ class TestOverlordDB(BaseFuncDB):
 
 
 class TestMinionDB(BaseFuncDB):
-    
+
     def __init__(self):
         super(TestMinionDB,self).__init__()
         self.status_opt = [jobthing.JOB_ID_RUNNING,jobthing.JOB_ID_FINISHED,jobthing.JOB_ID_PARTIAL,jobthing.JOB_ID_LOST_IN_SPACE,jobthing.JOB_ID_REMOTE_ERROR]

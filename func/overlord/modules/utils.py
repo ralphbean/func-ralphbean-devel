@@ -6,7 +6,7 @@ import func.jobthing as jobthing
 class utils(overlord_module.BaseModule):
     def __diff_dicts(self, a, b):
         return dict([(k, v) for k, v in a.iteritems() if k not in b])
-        
+
 
     def async_poll(self, job_id, partial_func=None, interval=0.5):
         async_done = False
@@ -37,4 +37,4 @@ class utils(overlord_module.BaseModule):
             time.sleep(interval)
 
     def list_minions(self):
-       return self.parent.minions
+        return self.parent.minions

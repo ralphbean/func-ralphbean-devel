@@ -37,7 +37,7 @@ def structToYaml(data):
 def structToJSON(data):
     #Take data structure for the test
     #and serializes it using json
-    
+
     serialized = simplejson.dumps(input)
     return serialized
 
@@ -94,7 +94,7 @@ class BaseTest(object):
         if self.async:
             return self._call_async(data)
         return self._call(data)
-        
+
     def __init__(self):
         pass
 
@@ -128,12 +128,12 @@ class JSONBaseTest(BaseTest):
         return data
 
 class ListMinion(object):
-    
+
     def test_list_minions(self):
         out = self.call({'clients': '*',
                          'module':'local',
                          'method':'utils.list_minions'})
-        
+
     def test_list_minions_no_match(self):
         out = self.call({'clients': 'somerandom-name-that-shouldnt-be-a_real_host_name',
                          'module':'local',
@@ -149,8 +149,8 @@ class ListMinion(object):
 #    def test_list_minions_no_clients(self):
 #        out = self.call({'module':'local',
 #                         'method': 'utils.list_minions'})
-                        
-              
+
+
 class ListMinionAsync(ListMinion):
     async = True
 
@@ -180,7 +180,7 @@ class TestListMinionJSON(JSONBaseTest, ListMinion):
 #        super(TestListMinionJSONAsync, self).__init__()
 
 
-    
+
 class ClientGlob(object):
     def _test_add(self, client):
         result = self.call({'clients': client,
@@ -189,7 +189,7 @@ class ClientGlob(object):
                             'parameters': [1,2]})
         self.assert_on_fault(result)
         return result
-    
+
     def test_single_client(self):
         result = self._test_add(self.th)
 
@@ -204,7 +204,7 @@ class ClientGlob(object):
 
     # note, needs a /etc/func/group setup with the proper groups defined
     # need to figure out a good way to test this... -akl
-# FIXME: 
+# FIXME:
 #    def test_group(self):
 #        result = self._test_add("@test")
 
@@ -218,7 +218,7 @@ class ClientGlob(object):
 #        result = self._test_add("@test;@test2")
 
 
-# run all the same tests, but run then 
+# run all the same tests, but run then
 class ClientGlobAsync(ClientGlob):
     async = True
 
@@ -252,7 +252,7 @@ class TestClientGlobJSONAsync(JSONBaseTest, ClientGlobAsync):
 # invoked as test classes themselves, only as bases for other tests
 class T_estTest(object):
 #    __test__ = False
-    
+
     def _echo_test(self, data):
         result = self.call({'clients':'*',
                              'method': 'echo',
@@ -262,7 +262,7 @@ class T_estTest(object):
         self.assert_on_fault(result)
         assert result[self.th] == data
 
-    
+
     def test_add(self):
         result = self.call({'clients':'*',
                              'method': 'add',
@@ -281,7 +281,7 @@ class T_estTest(object):
         self._echo_test(37)
 
     def test_echo_array(self):
-        self._echo_test([1,2,"three", "fore", "V"])        
+        self._echo_test([1,2,"three", "fore", "V"])
 
     def test_echo_hash(self):
         self._echo_test({'one':1, 'two':2, 'three': 3, 'four':"IV"})
@@ -290,7 +290,7 @@ class T_estTest(object):
         self._echo_test(1.0)
 
 
-    # NOTE/FIXME: the big float tests fail for yaml and json 
+    # NOTE/FIXME: the big float tests fail for yaml and json
 #    def test_echo_big_float(self):
 #        self._echo_test(123121232.23)
 
@@ -315,13 +315,13 @@ class T_estTestAsync(T_estTest):
 class T_estTestCommandRun(T_estTest):
     async = False
     def test_command_run(self):
-	result = self.call({'clients':'*',
+        result = self.call({'clients':'*',
 #                            'async': False,
 #                            'nforks': 1,
                              'method': 'run',
                              'module': 'command',
                              'parameters': 'ifconfig'})
-        
+
 
 class TestTestYamlCommandRun(YamlBaseTest, T_estTestCommandRun):
     yaml = True
@@ -344,7 +344,7 @@ class TestTestAsyncJSON(JSONBaseTest, T_estTestAsync):
     async = True
     def __init__(self):
         super(JSONBaseTest,self).__init__()
-                               
+
 class TestTestAsyncYaml(YamlBaseTest, T_estTestAsync):
     yaml = True
     async = True
@@ -356,5 +356,3 @@ class TestTestAsyncYaml(YamlBaseTest, T_estTestAsync):
 class TestTestYamlNforksOne(TestTestYaml):
     nforks = 1
     async = False
-
-

@@ -62,7 +62,7 @@ class Show(base_command.BaseCommand):
         self.argv = argv
 
         return base_command.BaseCommand.parse(self, argv)
-        
+
 
     def do(self, args):
         pass

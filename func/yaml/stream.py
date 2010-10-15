@@ -56,10 +56,10 @@ def split(text):
 
 def eatNewLines(stream):
     while 1:
-       line = stream.get()
-       if line is None or len(string.strip(line)):
-           return line
-
+        line = stream.get()
+        if line is None or len(string.strip(line)):
+            return line
+ 
 COMMENT_LINE_REGEX = re.compile(R"\s*#")
 def isComment(line):
     return line is not None and COMMENT_LINE_REGEX.match(line)

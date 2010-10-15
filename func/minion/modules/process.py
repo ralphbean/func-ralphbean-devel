@@ -37,8 +37,8 @@ class ProcessModule(func_module.FuncModule):
 
         flags.replace(";", "") # prevent stupidity
 
-        cmd = sub_process.Popen(["/bin/ps", flags], executable="/bin/ps", 
-                                stdout=sub_process.PIPE, 
+        cmd = sub_process.Popen(["/bin/ps", flags], executable="/bin/ps",
+                                stdout=sub_process.PIPE,
                                 stderr=sub_process.PIPE,
                                 shell=False)
 
@@ -157,9 +157,9 @@ class ProcessModule(func_module.FuncModule):
                 shareds[cmd]=shared
             cmds[cmd]=cmds.setdefault(cmd,0)+private
             if count.has_key(cmd):
-               count[cmd] += 1
+                count[cmd] += 1
             else:
-               count[cmd] = 1
+                count[cmd] = 1
 
         #Add shared mem for each program
         total=0
@@ -181,9 +181,9 @@ class ProcessModule(func_module.FuncModule):
 
         def cmd_with_count(cmd, count):
             if count>1:
-               return "%s (%u)" % (cmd, count)
+                return "%s (%u)" % (cmd, count)
             else:
-               return cmd
+                return cmd
 
         for cmd in sort_list:
             results.append([
@@ -203,12 +203,12 @@ class ProcessModule(func_module.FuncModule):
         if pid == "0":
             raise codes.FuncException("Killing pid group 0 not permitted")
         if signal == "":
-            # this is default /bin/kill behaviour, 
+            # this is default /bin/kill behaviour,
             # it claims, but enfore it anyway
             signal = "-TERM"
         if signal[0] != "-":
             signal = "-%s" % signal
-        rc = sub_process.call(["/bin/kill",signal, pid], 
+        rc = sub_process.call(["/bin/kill",signal, pid],
                               executable="/bin/kill", shell=False,
                               close_fds=True)
         print rc
@@ -216,7 +216,7 @@ class ProcessModule(func_module.FuncModule):
 
     def pkill(self,name,level=""):
         # example killall("thunderbird","-9")
-        rc = sub_process.call(["/usr/bin/pkill", name, level], 
+        rc = sub_process.call(["/usr/bin/pkill", name, level],
                               executable="/usr/bin/pkill", shell=False,
                               close_fds=True)
         return rc
@@ -234,24 +234,24 @@ class ProcessModule(func_module.FuncModule):
                    self.info:[],
                    self.mem:[]
                    }
-        #info result comes here 
+        #info result comes here
         info_result = self.info()
         for process_pack in info_result:
             tmp_str = " ".join(process_pack)
             if tmp_str.lower().find(word)!= -1 :
                 results[self.info].append(tmp_str)
-        
+
         #mem results will come here
         mem_result = self.mem()
         for m in mem_result:
             tmp_str = " ".join(m)
             if tmp_str.lower().find(word)!= -1 :
                 results[self.mem].append(tmp_str)
-        
-        
+
+
         return results
     grep = func_module.findout(grep)
-    
+
 
     def register_method_args(self):
         """
@@ -304,7 +304,7 @@ class ProcessModule(func_module.FuncModule):
                     "description":"Kill an app with supplying a name and level"
                     },
                 'loadavg':{
-                    'args':{}, 
+                    'args':{},
                     'description':"Returns a list of loadavg details."
                 },
                 }

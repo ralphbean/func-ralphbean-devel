@@ -41,7 +41,7 @@ def remove_weird_chars(dirty_word):
     That method will be used to clean some
     glob adress expressions because async stuff
     depends on that part
-    
+
     @param dirty_word : word to be cleaned
     """
     from copy import copy
@@ -76,10 +76,10 @@ def get_hostname_by_route():
     "localhost" is a lame hostname to use for a key, so try to get
     a more meaningful hostname. We do this by connecting to the certmaster
     and seeing what interface/ip it uses to make that connection, and looking
-    up the hostname for that. 
+    up the hostname for that.
     """
     # FIXME: this code ignores http proxies (which granted, we don't
-    #      support elsewhere either. 
+    #      support elsewhere either.
     hostname = None
     ip = None
 
@@ -120,7 +120,7 @@ def get_hostname_by_route():
             (hostname, aliases, ips) = socket.gethostbyaddr(minion_config.listen_addr)
         except:
             hostname = None
-     
+
     # in an ideal world, this would return exactly what we want: the most meaningful hostname
     # for a system, but that is often not that case
     if hostname is None:
@@ -136,8 +136,8 @@ def get_hostname_by_route():
     # non loopback is about as good as we can do for a guess
     if ip != "127.0.0.1" and hostname is not None:
         return hostname.lower()
-            
-  
+
+
 
     # all else has failed to get a good hostname, so just return
     # an ip address
@@ -145,21 +145,21 @@ def get_hostname_by_route():
 
 def find_files_by_hostname(hostglob, filepath, fileext=''):
     """look for files in the given filepath with the given extension that
-        match our hostname, but case insensitively. This handles the 
+        match our hostname, but case insensitively. This handles the
         craziness that is dns names that have mixed case :("""
-    
-    # this is a little like a case insensitive glob, except it's just one 
+
+    # this is a little like a case insensitive glob, except it's just one
     # layer deep - not multiple layers
-    
+
     if fileext and fileext[0] != '.':
         fileext = '.' + fileext
-    thisregex = fnmatch.translate('%s%s' % (hostglob, fileext)) 
+    thisregex = fnmatch.translate('%s%s' % (hostglob, fileext))
     recomp = re.compile(thisregex, re.I) # case insensitive match
     files = []
     for potfile in os.listdir(filepath):
         if recomp.match(potfile):
             files.append(potfile)
-    
+
     return [os.path.normpath(filepath + '/' + file) for file in files]
 
 
@@ -179,11 +179,11 @@ def get_fresh_method_instance(function_ref):
     calls we have a pool of references with module methods
     and overlord call them. If we want to pass those methods
     different logger instances in order to have log call per
-    job_ids we shouldnt have the same method reference to be 
+    job_ids we shouldnt have the same method reference to be
     called,we need fresh ones so that is how we solve that
     kind of hacky ...
     """
-    
+
     #CAUTION HACKY IF STATEMNETS AROUND :)
     # we dont want private methods and system
     #modules around ,we should change system
@@ -226,8 +226,8 @@ def re_glob(s):
 class TerminalController:
     """
     A class that can be used to portably generate formatted output to
-    a terminal.  
-    
+    a terminal.
+
     `TerminalController` defines a set of instance variables whose
     values are initialized to the control sequence necessary to
     perform a given action.  These can be simply included in normal
@@ -287,11 +287,11 @@ class TerminalController:
 
     # Foreground colors:
     BLACK = BLUE = GREEN = CYAN = RED = MAGENTA = YELLOW = WHITE = ''
-    
+
     # Background colors:
     BG_BLACK = BG_BLUE = BG_GREEN = BG_CYAN = ''
     BG_RED = BG_MAGENTA = BG_YELLOW = BG_WHITE = ''
-    
+
     _STRING_CAPABILITIES = """
     BOL=cr UP=cuu1 DOWN=cud1 LEFT=cub1 RIGHT=cuf1
     CLEAR_SCREEN=clear CLEAR_EOL=el CLEAR_BOL=el1 CLEAR_EOS=ed BOLD=bold
@@ -323,7 +323,7 @@ class TerminalController:
         # Look up numeric capabilities.
         self.COLS = curses.tigetnum('cols')
         self.LINES = curses.tigetnum('lines')
-        
+
         # Look up string capabilities.
         for capability in self._STRING_CAPABILITIES:
             (attrib, cap_name) = capability.split('=')
@@ -375,7 +375,7 @@ class TerminalController:
 class ProgressBar:
     """
     A 3-line progress bar, which looks like::
-    
+
                                 Header
         20% [===========----------------------------------]
                            progress message
@@ -385,7 +385,7 @@ class ProgressBar:
     """
     BAR = '%3d%% ${WHITE}[${BLUE}%s%s${NORMAL}${WHITE}]${NORMAL}\n'
     HEADER = '${BOLD}${CYAN}%s${NORMAL}\n\n'
-        
+
     def __init__(self, term, header,minValue = 0, maxValue = 10):
         self.term = term
         if not (self.term.CLEAR_EOL and self.term.UP and self.term.BOL):
@@ -395,12 +395,12 @@ class ProgressBar:
         self.bar = term.render(self.BAR)
         self.header = self.term.render(self.HEADER % header.center(self.width))
         self.cleared = 1 #: true if we haven't drawn the bar yet.
-        
+
         self.min = minValue
         self.max = maxValue
         self.span = maxValue - minValue
-        self.amount = 0       # When amount == max, we are 100% done 
-        
+        self.amount = 0       # When amount == max, we are 100% done
+
         #initially it is 0
         self.update(0, '')
 
@@ -408,7 +408,7 @@ class ProgressBar:
         if newAmount < self.min: newAmount = self.min
         if newAmount > self.max: newAmount = self.max
         self.amount = newAmount
-        
+
         # Figure out the new percent done, round to an integer
         diffFromMin = float(self.amount - self.min)
         percentDone = (diffFromMin / float(self.span)) * 100.0
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     term = TerminalController()
     progress = ProgressBar(term, 'Progress Status',minValue=0,maxValue=5)
     filenames = ['this', 'that', 'other', 'foo', 'bar']
-    
+
     for i, filename in zip(range(len(filenames)), filenames):
         progress.update(i+1)
         time.sleep(3)
@@ -445,4 +445,3 @@ if __name__ == "__main__":
     #progress.clear()
 
 #################### PROGRESS BAR ##################################
-

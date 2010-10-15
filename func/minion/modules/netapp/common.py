@@ -28,7 +28,7 @@ def ssh(host, cmdargs, input=None, user=SSH_USER):
     cmd = sub_process.Popen(cmdline,
                            executable=SSH,
                            stdin=sub_process.PIPE,
-                           stdout=sub_process.PIPE, 
+                           stdout=sub_process.PIPE,
                            stderr=sub_process.PIPE,
                            shell=False)
 
@@ -46,4 +46,3 @@ def check_output(regex, output):
         return True
     else:
         raise NetappCommandError, output
-

@@ -40,7 +40,7 @@ class Snap(func_module.FuncModule):
         cmd_opts = ['snap', 'delete', vol, snap]
         output = ssh(filer, cmd_opts)
         return check_output(regex, output)
-    
+
     def list(self, filer, vol):
         """
         TODO: Document me ...
@@ -61,7 +61,7 @@ class Snap(func_module.FuncModule):
                 'optional':False,
                 'description':"The name of the snapshot"
                 }
-        
+
         filer = {
                 'type':'string',
                 'optional':False,
@@ -93,4 +93,3 @@ class Snap(func_module.FuncModule):
                     'description':""
                     }
                 }
-

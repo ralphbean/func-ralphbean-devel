@@ -31,7 +31,7 @@ from func.overlord.group.base import BaseBackend
 
 class ConfBackend(BaseBackend):
     """
-    That backend uses a configuraton file for 
+    That backend uses a configuraton file for
     keeping the stuff
     """
     def __init__(self,conf_file = None,*args,**kwargs):
@@ -46,7 +46,7 @@ class ConfBackend(BaseBackend):
         self.__parse()
 
 
-    
+
     def __parse(self):
 
         self.cp = ConfigParser.SafeConfigParser()
@@ -63,14 +63,14 @@ class ConfBackend(BaseBackend):
                     for h in hosts:
                         h = h.strip()
                         self.add_host_to_group(section,h,save=False)
-                        
+
     def add_host_to_group(self,group,host,save=True):
         """
         Adds a host to a group
         """
         host = host.lower()
         group = group.lower()
-        
+
         if not self.__groups.has_key(group):
             self.__groups[group] = []
 
@@ -84,7 +84,7 @@ class ConfBackend(BaseBackend):
         if save:
             self.save_changes()
         return (True,"")
-    
+
     def add_group(self,group,save=True):
         """
         Adds a group
@@ -124,10 +124,10 @@ class ConfBackend(BaseBackend):
         """
         host = host.lower()
         group = group.lower()
-        
+
         if not self.__groups.has_key(group) or not host in self.__groups[group]:
             return (False,"Non existing group or name")
-        
+
         #remove the machine from there
         self.__groups[group].remove(host)
         #save to config file
@@ -136,7 +136,7 @@ class ConfBackend(BaseBackend):
 
         return (True,'')
 
-    
+
     def save_changes(self):
         """
         Write changes to disk
@@ -151,25 +151,25 @@ class ConfBackend(BaseBackend):
         conf_file = open(self.config, "w")
         self.cp.write(conf_file)
 
-    
+
     def get_groups(self,pattern=None,exact=True,exclude=None):
         """
         Get a list of groups
 
         @param pattern : You may request to get an exact host or
                          a one in proper pattern .
-        @param exact   : Related to pattern if you should do exact 
+        @param exact   : Related to pattern if you should do exact
                          matching or related one.
         @param exclude : A list to be excluded from final set
 
         """
-        
+
         if not pattern:
             #return all of them
             if not exclude:
                 return self.__groups.keys()
             else:
-                #get the difference of 2 sets 
+                #get the difference of 2 sets
                 return list(set(self.__groups.keys()).difference(set(exclude)))
         else:
             #it seems there is a pattern
@@ -204,10 +204,10 @@ class ConfBackend(BaseBackend):
 
         """
         Get a set of hosts
-        
+
         @param pattern : You may request to get an exact host or
                          a one in proper pattern .
-        @param exact   : Related to pattern if you should do exact 
+        @param exact   : Related to pattern if you should do exact
                          matching or related one.
         @param exclude : A list to be excluded from final set
         """
@@ -218,7 +218,7 @@ class ConfBackend(BaseBackend):
             return []
 
         hosts = self.__groups[group[0]]
-        #print "The hosts we got are ",hosts 
+        #print "The hosts we got are ",hosts
 
         if not pattern:
             #return all of them
@@ -226,7 +226,7 @@ class ConfBackend(BaseBackend):
                 #print "Returning back the hosts ",hosts
                 return hosts
             else:
-                #get the difference of 2 sets 
+                #get the difference of 2 sets
                 return list(set(hosts()).difference(set(exclude)))
         else:
             #it seems there is a pattern
@@ -262,6 +262,3 @@ class ConfBackend(BaseBackend):
 
             #shouldnt come here actually
             return []
-
-
-    

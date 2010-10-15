@@ -18,8 +18,8 @@ class HardwareFacts(fact_module.BaseFactModule):
             errmsg = "Import error while loading smolt for the hardware facts module. Smolt is probably not installed. This module is useless without it."
             self.logger.warning(errmsg)
             self.logger.warning("%s" % traceback.format_exc())
-            # hmm, what to return... 
-            return 
+            # hmm, what to return...
+            return
 
         hardware = smolt.Hardware()
         self.host = hardware.host
@@ -38,11 +38,11 @@ class HardwareFacts(fact_module.BaseFactModule):
         Gives back the os name of the system
         """
         return str(self.host.os)
-    
+
     #for easier acces be creful should be unique
     os_name.tag = "os"
 
-    
+
     def cpu_vendor(self):
         """
         The cpu vendor easy one
@@ -51,13 +51,13 @@ class HardwareFacts(fact_module.BaseFactModule):
 
     cpu_vendor.tag = "cpuvendor"
 
-    
+
     def cpu_model(self):
         """
         Cpu model
         """
         return str(self.host.cpuModel)
- 
+
     cpu_model.tag = "cpumodel"
 
     def kernel_version(self):
@@ -65,8 +65,5 @@ class HardwareFacts(fact_module.BaseFactModule):
         Kernel version
         """
         return str(self.host.kernelVersion)
-    
+
     kernel_version.tag = "kernel"
-
-
-

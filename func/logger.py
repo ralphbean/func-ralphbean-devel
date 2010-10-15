@@ -34,12 +34,12 @@ class Logger(Singleton):
 
     def __init__(self, logfilepath ="/var/log/func/func.log"):
         config_file = '/etc/func/minion.conf'
-        self.config = read_config(config_file, FuncdConfig)    
+        self.config = read_config(config_file, FuncdConfig)
         self.loglevel = logging._levelNames[self.config.log_level]
         self._setup_logging()
         if self._no_handlers:
             self._setup_handlers(logfilepath=logfilepath)
-        
+
     def _setup_logging(self):
         self.logger = logging.getLogger("svc")
 
@@ -87,7 +87,7 @@ class AuditLogger(Singleton):
 #some more dynamic logger handlers here
 config_file = '/etc/func/minion.conf'
 config = read_config(config_file, FuncdConfig)
-GLOBAL_LOG_DIR = config.method_log_dir 
+GLOBAL_LOG_DIR = config.method_log_dir
 class StandartLogger(object):
     """
     It is just a proxy like object to the logging
@@ -105,14 +105,14 @@ class StandartLogger(object):
         # a default case is to have a FileHandler for all that is what we want
         for handler in self.handlers:
             self.logger.addHandler(handler)
-    
+
     def progress(self,current,all):
         """
-        A method to log the progress of the 
+        A method to log the progress of the
         running method ...
         """
         self.logger.debug("Progress report %d/%d completed"%(current,all))
-    
+
     def debug(self,msg):
         self.logger.debug(msg)
     def info(self,msg):
@@ -159,7 +159,7 @@ STANDART_LOGGER = 0
 EXCEPTION_LOGGER = 1
 
 class LogFactory(object):
-    
+
     def get_instance(type=STANDART_LOGGER,app_name="direct_log",log_place=None):
         if type == STANDART_LOGGER:
             if not log_place:
@@ -177,4 +177,3 @@ class LogFactory(object):
         else:
             return None
     get_instance = staticmethod(get_instance)
-

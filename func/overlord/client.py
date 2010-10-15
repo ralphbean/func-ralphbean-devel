@@ -92,7 +92,7 @@ class CommandAutomagic(object):
 # other modules with a Overlord class
 
 class Minions(object):
-    def __init__(self, spec, port=51234, 
+    def __init__(self, spec, port=51234,
                  noglobs=None, verbose=None,
                  just_fqdns=False, groups_backend="conf",
                  delegate=False, minionmap={},exclude_spec=None,**kwargs):
@@ -107,17 +107,17 @@ class Minions(object):
         self.exclude_spec = exclude_spec
 
         self.cm_config = read_config(CONFIG_FILE, CMConfig)
-        self.overlord_config = read_config(OVERLORD_CONFIG_FILE, OverlordConfig)        
+        self.overlord_config = read_config(OVERLORD_CONFIG_FILE, OverlordConfig)
         self.group_class = groups.Groups(backend=groups_backend,
                                     get_hosts_for_spec=self.get_hosts_for_spec,
                                     **kwargs)
-        
+
         #lets make them sets so we dont loop again and again
         self.all_hosts = set()
         self.all_certs = set()
         self.all_urls = []
         self._downed_hosts = []
-        
+
     def _get_new_hosts(self):
         self.new_hosts = self._get_group_hosts(self.spec)
         return self.new_hosts
@@ -160,13 +160,13 @@ class Minions(object):
 
         #actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, each_gloob, self.cm_config.cert_extension)
         certs = func_utils.find_files_by_hostname(each_gloob, self.cm_config.certroot, self.cm_config.cert_extension)
-        
+
         # pull in peers if enabled for minion-to-minion
         if self.cm_config.peering:
             #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, each_gloob, self.cm_config.cert_extension)
-            certs += func_utils.find_files_by_hostname(each_gloob, self.cm_config.peerroot, self.cm_config.cert_extension)            
-            
-        
+            certs += func_utils.find_files_by_hostname(each_gloob, self.cm_config.peerroot, self.cm_config.cert_extension)
+
+
         # if we can't match this gloob and the gloob is not REALLY a glob
         # let the gloob be the hostname we try to connect to.
         if not certs and not func_utils.re_glob(each_gloob):
@@ -175,7 +175,7 @@ class Minions(object):
 
             for name in aliases:
                 #actual_gloob = "%s/%s.%s" % (self.cm_config.certroot, name, self.cm_config.cert_extension)
-                certs += func_utils.find_files_by_hostname(name, self.cm_config.certroot, self.cm_config.cert_extension)                
+                certs += func_utils.find_files_by_hostname(name, self.cm_config.certroot, self.cm_config.cert_extension)
                 if self.cm_config.peering:
                     #peer_gloob = "%s/%s.%s" % (self.cm_config.peerroot, name, self.cm_config.cert_extension)
                     certs += func_utils.find_files_by_hostname(name, self.cm_config.peerroot, self.cm_config.cert_extension)
@@ -209,7 +209,7 @@ class Minions(object):
     def _get_all_hosts(self):
         """
         Gets hosts that are included and excluded by user
-        a better orm like spec so user may say 
+        a better orm like spec so user may say
         func "*" --exclude "www.*;@mygroup" ...
         """
         included_part = self._get_hosts_for_specs(self.spec.split(";")+self.new_hosts)
@@ -232,7 +232,7 @@ class Minions(object):
         self._get_new_hosts()
         self._get_all_hosts()
 
-        #we keep it all the time as a set so 
+        #we keep it all the time as a set so
         return list(self.all_hosts)
 
     def get_urls(self, hosts=[]):
@@ -240,9 +240,9 @@ class Minions(object):
             self._get_new_hosts()
             self._get_all_hosts()
             hosts = self.all_hosts
-        
+
         results = []
-        
+
         for host in hosts:
             if host in self.downed_hosts:
                 if self.verbose:
@@ -255,7 +255,7 @@ class Minions(object):
 
             if not host_res in results: # this might get slow if there are thousands of hosts
                 results.append(host_res)
-        
+
         if self.verbose and len(results) == 0:
             sys.stderr.write("no hosts matched\n")
 
@@ -272,7 +272,7 @@ class Minions(object):
         """returns a list of minions which are known to not be up"""
         if self._downed_hosts:
             return self._downed_hosts
-            
+
         hosts = []
         if self.overlord_config.host_down_list and \
                   os.path.exists(self.overlord_config.host_down_list):
@@ -284,11 +284,11 @@ class Minions(object):
                 if hn not in hosts:
                     hosts.append(hn)
             fo.close()
-        
+
         self._downed_hosts = hosts
-        
+
         return self._downed_hosts
-    
+
     downed_hosts = property(fget=lambda self: self._get_downed_hosts())
 
 class PuppetMinions(Minions):
@@ -302,7 +302,7 @@ class PuppetMinions(Minions):
 
         Minions.__init__(self, spec, port=port, noglobs=noglobs, verbose=verbose,
                         just_fqdns=just_fqdns, groups_backend=groups_backend,
-                        delegate=delegate, minionmap=minionmap, 
+                        delegate=delegate, minionmap=minionmap,
                         exclude_spec=exclude_spec,**kwargs)
 
     def _get_hosts_for_spec(self,each_gloob):
@@ -364,9 +364,9 @@ class PuppetMinions(Minions):
             if fnmatch.fnmatch(hostname, each_gloob):
                 matched_gloob = True
                 tmp_hosts.add(hostname)
-            
+
             # if we can't match this gloob and the gloob is not REALLY a glob
-            # then toss this at gethostbyname_ex() and see if any of the cname 
+            # then toss this at gethostbyname_ex() and see if any of the cname
             # or aliases matches _something_ we know about
             if not matched_gloob and not func_utils.re_glob(each_gloob):
                 found_by_alias = False
@@ -408,11 +408,11 @@ class PuppetMinions(Minions):
                     (crap, serial) = line.split(':')
                     serial = serial.strip()
                     serial = int(serial, 16)
-                    serials.append(serial)  
-        
+                    serials.append(serial)
+
             self._revoked_serials = serials
-        
-        
+
+
 
 
 # does the hostnamegoo actually expand to anything?
@@ -451,7 +451,7 @@ class Overlord(object):
         if config:
             self.config = config
 
-        self.overlord_config = self.config # for backward compat 
+        self.overlord_config = self.config # for backward compat
 
 
         self.server_spec = server_spec
@@ -463,7 +463,7 @@ class Overlord(object):
         self.verbose     = verbose
         self.interactive = interactive
         self.noglobs     = noglobs
-                
+
         # the default
         self.timeout = DEFAULT_TIMEOUT
         # the config file
@@ -491,7 +491,7 @@ class Overlord(object):
             self._mc = PuppetMinions
         else:
             self._mc = Minions
-            
+
         if self.delegate:
             try:
                 mapstream = file(self.mapfile, 'r').read()
@@ -513,20 +513,20 @@ class Overlord(object):
             self.setup_ssl()
 
         self.methods = module_loader.load_methods('func/overlord/modules/', overlord_module.BaseModule, self)
-            
+
     def setup_ssl(self, client_key=None, client_cert=None, ca=None):
         # defaults go:
           # certmaster key, cert, ca
           # funcd key, cert, ca
           # raise FuncClientError
-        
+
         if not client_key and self.config.key_file != '':
             client_key = self.config.key_file
         if not client_cert and self.config.cert_file != '':
             client_cert = self.config.cert_file
         if not ca and self.config.ca_file != '':
             ca = self.config.ca_file
-            
+
         ol_key = '%s/certmaster.key' % self.cm_config.cadir
         ol_crt = '%s/certmaster.crt' % self.cm_config.cadir
         myname = func_utils.get_hostname_by_route()
@@ -538,7 +538,7 @@ class Overlord(object):
         self.ca = '%s/certmaster.crt' % self.cm_config.cadir
         if not os.access(self.ca, os.R_OK):
             self.ca = '%s/ca.cert' % self.cm_config.cert_dir
-        if client_key and client_cert and ca:        
+        if client_key and client_cert and ca:
             if (os.access(client_key, os.R_OK) and os.access(client_cert, os.R_OK)
                             and os.access(ca, os.R_OK)):
                 self.key = client_key
@@ -554,10 +554,10 @@ class Overlord(object):
         else:
             raise Func_Client_Exception, 'Cannot read ssl credentials: ssl, cert, ca. '+\
                   'Ensure you have permission to read files in /etc/pki/certmaster/ directory.'
-            
 
-        
-    
+
+
+
     def __getattr__(self, name):
         """
         This getattr allows manipulation of the object as if it were
@@ -579,7 +579,7 @@ class Overlord(object):
         """
         Use this to acquire status from jobs when using run with async client handles
         """
-        status,async_result = jobthing.job_status(jobid, client_class=Overlord, 
+        status,async_result = jobthing.job_status(jobid, client_class=Overlord,
                    client_class_config=self.config)
         if not self.overlord_query.fact_query:
             #that will use the default overlord job_status
@@ -595,8 +595,8 @@ class Overlord(object):
         to get current ids with their short results in the database
         """
         return jobthing.get_open_ids()
-    
-    
+
+
     def tail_log(self,job_id,host=None,remove_old=None):
         """
         Method will read from minion the log file
@@ -604,15 +604,15 @@ class Overlord(object):
         output of it ,pretty easy ...
         """
         from func.index_db import get_index_data,delete_index_data
-        from func.jobthing import JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR,JOB_ID_RUNNING 
-        RETAIN_INTERVAL = 60 * 60 
+        from func.jobthing import JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR,JOB_ID_RUNNING
+        RETAIN_INTERVAL = 60 * 60
         import time
-        
+
         code,result = Overlord(self.server_spec).job_status(job_id)
         if code == JOB_ID_RUNNING:
             return (None,False)
         index_data = get_index_data()
-        
+
         #if we should remove old ones
         if remove_old:
             rm_list = []
@@ -625,7 +625,7 @@ class Overlord(object):
             #deleting the old ones
             print "I will delete those : ",rm_list
             delete_index_data(rm_list)
-            
+
         host_output = {}
         if index_data.has_key(job_id):
             host_tuple = index_data[job_id]
@@ -644,7 +644,7 @@ class Overlord(object):
                     return (None,True)
         else:
             return (None,True)
-        
+
         if code in [JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR]:
             #means that job isfinished there is no need to wait for more
             return (host_output,True)
@@ -660,13 +660,13 @@ class Overlord(object):
         """
 
         from func.index_db import get_index_data
-        from func.jobthing import JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR,JOB_ID_RUNNING 
-        
+        from func.jobthing import JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR,JOB_ID_RUNNING
+
         code,result = Overlord(self.server_spec).job_status(job_id)
         if code == JOB_ID_RUNNING:
             return (None,False)
         index_data = get_index_data()
-        
+
         host_output = {}
         if index_data.has_key(job_id):
             host_tuple = index_data[job_id]
@@ -680,7 +680,7 @@ class Overlord(object):
                 return (None,True)
         else:
             return (None,True)
-        
+
         if code in [JOB_ID_FINISHED,JOB_ID_LOST_IN_SPACE,JOB_ID_REMOTE_ERROR]:
             #means that job isfinished there is no need to wait for more
             if host_output[host] == [0,0]:
@@ -708,7 +708,7 @@ class Overlord(object):
             if minion not in minionlist: #ugh, brute force :(
                 minionlist.append(minion)
         return minionlist
-        
+
     # -----------------------------------------------
 
     def run(self, module, method, args, nforks=1):
@@ -734,17 +734,17 @@ class Overlord(object):
                 return self.overlord_query.display_active(minion_result)
             else:
                 return minion_result
-        
+
         delegatedhash = {}
         directhash = {}
         completedhash = {}
-        
+
         #First we get all call paths for minions not directly beneath this overlord
         dele_paths = dtools.get_paths_for_glob(self.server_spec, self.minionmap)
-        
+
         #Then we group them together in a dictionary by a common next hop
         (single_paths,grouped_paths) = dtools.group_paths(dele_paths)
-        
+
         for group in grouped_paths.keys():
             delegatedhash.update(self.run_direct(module,
                                               method,
@@ -752,13 +752,13 @@ class Overlord(object):
                                               nforks,
                                               call_path=grouped_paths[group],
                                               suboverlord=group))
-        
+
         #Next, we run everything that can be run directly beneath this overlord
         #Why do we do this after delegation calls?  Imagine what happens when
         #reboot is called...
         if single_paths != []:
             directhash.update(self.run_direct(module,method,args,nforks))
-        
+
         #poll async results if we've async turned on
         if self.async:
             while (len(delegatedhash) + len(directhash)) > 0:
@@ -772,7 +772,7 @@ class Overlord(object):
                     else:
                         completedhash.update(async_results[minion])
                         del delegatedhash[minion]
-                
+
                 for minion in directhash.keys():
                     results = directhash[minion]
                     (return_code, async_results) = self.job_status(results)
@@ -788,20 +788,20 @@ class Overlord(object):
                 return self.overlord_query.display_active(completedhash)
             else:
                 return completedhash
-        
 
-        
+
+
         #we didn't instantiate this Overlord in async mode, so we just return the
         #result hash
         completedhash.update(delegatedhash)
         completedhash.update(directhash)
-        
+
         if self.overlord_query.fact_query:
             return self.overlord_query.display_active(completedhash)
         else:
             return completedhash
-        
-        
+
+
     # -----------------------------------------------
 
     def run_direct(self, module, method, args, nforks=1, *extraargs, **kwargs):
@@ -822,7 +822,7 @@ class Overlord(object):
         use_delegate = False
         delegation_path = []
 
-        
+
         def process_server(bucketnumber, buckets, server):
             conn = sslclient.FuncServer(server, self.key, self.cert, self.ca, self.timeout)
             # conn = xmlrpclib.ServerProxy(server)
@@ -852,7 +852,7 @@ class Overlord(object):
                 # this is the point at which we make the remote call.
                 if use_delegate:
                     retval = getattr(conn, meth)(module,
-                                                 method, 
+                                                 method,
                                                  args,
                                                  delegation_path,
                                                  self.async,
@@ -862,7 +862,7 @@ class Overlord(object):
 
                 if self.interactive:
                     print retval
-                    
+
             except Exception, e:
                 (t, v, tb) = sys.exc_info()
                 retval = utils.nice_exception(t,v,tb)
@@ -877,7 +877,7 @@ class Overlord(object):
                 right = server.rfind(":")
                 server_name = server[left:right]
                 return (server_name, retval)
-        
+
         if kwargs.has_key('call_path'): #we're delegating if this key exists
             delegation_path = kwargs['call_path']
             spec = kwargs['suboverlord'] #the sub-overlord directly beneath this one
@@ -891,7 +891,7 @@ class Overlord(object):
 
             #print "Minion_url is :",minionurls
             #print "Process server is :",process_server
-        
+
         if not self.noglobs:
             if self.nforks > 1 or self.async:
                 # using forkbomb module to distribute job over multiple threads
@@ -905,25 +905,25 @@ class Overlord(object):
                 results = {}
                 for x in minionurls:
                     (nkey,nvalue) = process_server(0, 0, x)
-                    results[nkey] = nvalue    
+                    results[nkey] = nvalue
         else:
-            
+
             # globbing is not being used, but still need to make sure
             # URI is well formed.
 #            expanded = expand_servers(self.server_spec, port=self.port, noglobs=True, verbose=self.verbose)[0]
             expanded_minions = self._mc(spec, port=self.port, noglobs=True, verbose=self.verbose)
             minions = expanded_minions.get_urls()[0]
             results = process_server(0, 0, minions)
-        
+
         if self.delegate and self.async:
             return {spec:results}
-        
+
         if use_delegate:
             if utils.is_error(results[spec]):
                 print results
                 return results
             return results[spec]
-        
+
         return results
 
    # -----------------------------------------------
@@ -954,108 +954,108 @@ class Overlord(object):
             if x > max:
                 max = x
         return max
-    
+
     def filter(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ANDED
         """
 
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.filter(*args,**kwargs)
-        
-        #give back the fresh reference 
+
+        #give back the fresh reference
         return fresh_overlord
-    
+
     def filter_or(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ORED
         """
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.filter_or(*args,**kwargs)
 
-        #give back the fresh reference 
+        #give back the fresh reference
         return fresh_overlord
-    
+
     def and_and(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ORED
         """
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.and_and(*args,**kwargs)
-        
-        #give back the fresh reference 
+
+        #give back the fresh reference
         return fresh_overlord
 
-        
-    
+
+
     def and_or(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ORED
         """
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.and_or(*args,**kwargs)
 
-        #give back the fresh reference 
+        #give back the fresh reference
         return fresh_overlord
-        
+
     def or_or(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ORED
         """
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.or_or(*args,**kwargs)
 
-        #give back the fresh reference 
+        #give back the fresh reference
         return fresh_overlord
 
-    
+
     def or_and(self,*args,**kwargs):
         """
         Filter The facts and doesnt call
-        the minion directly just gives back a 
+        the minion directly just gives back a
         reference to the same object ORED
         """
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.or_and(*args,**kwargs)
 
-        #give back the fresh reference 
+        #give back the fresh reference
         return fresh_overlord
 
     def set_complexq(self,q_object,connector=None):
-        #create a fresh overlord 
+        #create a fresh overlord
         fresh_overlord = self._clone()
         fresh_overlord.overlord_query.fact_query = self.overlord_query.fact_query.set_compexq(q_object,connector)
 
-        #give back the fresh reference 
+        #give back the fresh reference
         return fresh_overlord
-    
+
     def _clone(self,klass=None):
         """
         That method is for situations where we use query stuff
-        when querying it is important to return a fresh object of 
-        Overlord instead of working on the same oone,so we can 
+        when querying it is important to return a fresh object of
+        Overlord instead of working on the same oone,so we can
         work on one instance which reproduces many temporary ones
         """
         from copy import copy
         if klass is None:
             klass = self.__class__
-        
+
         #create a fresh copy
         c = klass(copy(self.server_spec),
                   port=copy(self.port),
@@ -1075,4 +1075,4 @@ class Overlord(object):
 class Client(Overlord):
     def __init__(self, *args, **kwargs):
         Overlord.__init__(self, *args, **kwargs)
-        # provided for backward compatibility only 
+        # provided for backward compatibility only

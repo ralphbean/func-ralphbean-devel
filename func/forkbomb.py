@@ -52,7 +52,7 @@ def __access_buckets(filename,clear,new_key=None,new_value=None):
 
     if not storage.has_key("data"):
         storage["data"] = {}
-    else: 
+    else:
         pass
 
     if new_key is not None:
@@ -78,7 +78,7 @@ def __bucketize(pool, slots):
         slot = count % slots
         count = count + 1
         if not buckets.has_key(slot):
-            buckets[slot] = [] 
+            buckets[slot] = []
         buckets[slot].append(key)
     return buckets
 
@@ -111,11 +111,11 @@ def __forkbomb(mybucket,buckets,what_to_do,filename):
             else:
                 raise ose
     else:
-        __with_my_bucket(mybucket,buckets,what_to_do,filename)    
+        __with_my_bucket(mybucket,buckets,what_to_do,filename)
         os._exit(0)
 
 def __demo(bucket_number, buckets, my_item):
-    """ 
+    """
     This is a demo handler for test purposes.
     It just multiplies all numbers by 1000, but slowly.
     """
@@ -129,11 +129,11 @@ def batch_run(pool,callback,nforks=DEFAULT_FORKS,cachedir=DEFAULT_CACHE_DIR):
     """
     Given an array of items (pool), call callback in each one, but divide
     the workload over nfork forks.  Temporary files used during the
-    operation will be created in cachedir and subsequently deleted.    
+    operation will be created in cachedir and subsequently deleted.
     """
     if nforks < 1:
-       # modulus voodoo gets crazy otherwise and bad things happen
-       nforks = 1
+        # modulus voodoo gets crazy otherwise and bad things happen
+        nforks = 1
     shelf_file = __get_storage(cachedir)
     __access_buckets(shelf_file,True,None)
     buckets = __bucketize(pool, nforks)
@@ -155,5 +155,3 @@ def __test(nforks=4,sample_size=20):
 
 if __name__ == "__main__":
     __test()
-
-

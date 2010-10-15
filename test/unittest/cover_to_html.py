@@ -2,22 +2,22 @@
 
 #Copyright (c) 2005 Drew Smathers
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
-# of this software and associated documentation files (the "Software"), to deal 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-# of the Software, and to permit persons to whom the Software is furnished to do 
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+# of the Software, and to permit persons to whom the Software is furnished to do
 # so, subject to the following conditions:
 
-# The above copyright notice and this permission notice shall be included in all 
+# The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
 
@@ -97,7 +97,7 @@ def _annotationToXML(annotation):
         aline.attrib['covered'] = str(line.covered).lower()
         aline.text = line.text
     return ET.ElementTree(root)
-    
+
 
 def annotationToHTML(annotation, xml=None, xslt=None, tree=False):
     """Transform annotation object to HTML string or ElementTree instance
@@ -200,31 +200,31 @@ def _reportToXML(report):
             relm.attrib['start'] = start
             relm.attrib['end'] = end
     return ET.ElementTree(root)
-    
+
 
 def gen_html(path_to_cover, path_for_html):
-	cover_files = glob.glob("%s/*,cover" % path_to_cover)
+    cover_files = glob.glob("%s/*,cover" % path_to_cover)
 
-        # write out the css file
-        f = open("coverage.css", "w")
-        f.write(_CSS)
+    # write out the css file
+    f = open("coverage.css", "w")
+    f.write(_CSS)
+    f.close()
+
+    for cf in cover_files:
+        fd = open(cf, "r")
+        ann = AnnotationParser().parse(fd)
+        html = annotationToHTML(ann, xslt=_XSLT)
+        base_name = os.path.basename(cf)
+        source_name = base_name.split(',')[0]
+        html_name = "%s/%s.html" % (path_for_html, source_name)
+        f = open(html_name, "w")
+        f.write(html)
         f.close()
-
-	for cf in cover_files:
-                fd = open(cf, "r")
-		ann = AnnotationParser().parse(fd) 
-		html = annotationToHTML(ann, xslt=_XSLT) 
-		base_name = os.path.basename(cf)
-		source_name = base_name.split(',')[0]
-		html_name = "%s/%s.html" % (path_for_html, source_name)
-		f = open(html_name, "w")
-		f.write(html)
-		f.close()
 
 #        fd = open("%s/cover.report" % path_to_cover)
 #        crp = CoverageReportParser().parse(fd)
-        
-        
+
+
 _CSS = """
 body {
     margin: 0px;
@@ -302,7 +302,7 @@ pre {
     float: bottom;
     width: 100%;
     margin-top: 20px;
-    font-size: 75%; 
+    font-size: 75%;
     text-align: center;
 }
 
@@ -350,6 +350,4 @@ _XSLT = '''<?xml version="1.0"?>
 
 
 if __name__ == "__main__":
-	gen_html(sys.argv[1], sys.argv[2])
-
-
+    gen_html(sys.argv[1], sys.argv[2])

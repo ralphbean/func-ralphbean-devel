@@ -22,6 +22,5 @@ for (host,details) in info.iteritems():
         print "Host %s may have problems" % host
         print "\n".join(list_of_output[3:])
         failures = failures + 1
-        
-print "\n%s systems reported problems" % failures
 
+print "\n%s systems reported problems" % failures

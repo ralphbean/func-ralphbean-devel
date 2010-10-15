@@ -18,8 +18,6 @@ for (host,details) in info.iteritems():
 
     for (device, full_output) in details.iteritems():
         for bad_value in bad:
-             if full_output.find(bad_value) != -1:
+            if full_output.find(bad_value) != -1:
                 print "%s has flagged part: %s, matched %s" % (host, device, bad_value)
                 break
-
-

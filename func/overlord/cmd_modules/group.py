@@ -22,41 +22,41 @@ class Group(base_command.BaseCommand):
     usage = "group [--add_group] [--remove_group] [--list_group] [--list_all] [--add_host] [--remove_host] [--list_hosts] {--exclude}"
     summary = "allows a specific module and method to be called"
     def addOptions(self):
-        
+
         self.parser.add_option("-v", "--verbose", dest="verbose",
                                default=self.verbose,
                                action="store_true")
-        
-        self.parser.add_option("--ag", "--add_group", 
+
+        self.parser.add_option("--ag", "--add_group",
                                dest="add_group",
                                action="store_true")
-        
-        self.parser.add_option("--lg", "--list_group", 
+
+        self.parser.add_option("--lg", "--list_group",
                                dest="list_group",
                                action="store_true")
-        
 
-        self.parser.add_option("--rg", "--remove_group", 
+
+        self.parser.add_option("--rg", "--remove_group",
                                dest="remove_group",
                                action="store_true")
-        
-        self.parser.add_option("--la", "--list_all", 
+
+        self.parser.add_option("--la", "--list_all",
                                dest="list_all",
                                action="store_true")
-        
-        self.parser.add_option("--ah", "--add_host", 
+
+        self.parser.add_option("--ah", "--add_host",
                                dest="add_host",
                                action="store_true")
 
-        self.parser.add_option("--rh", "--remove_host", 
+        self.parser.add_option("--rh", "--remove_host",
                                dest="remove_host",
                                action="store_true")
 
-        self.parser.add_option("--lh", "--list_hosts", 
+        self.parser.add_option("--lh", "--list_hosts",
                                dest="list_hosts",
                                action="store_true")
 
-        self.parser.add_option("--e", "--exclude", 
+        self.parser.add_option("--e", "--exclude",
                                dest="exclude",
                                action="store",
                                type="string")
@@ -73,7 +73,7 @@ class Group(base_command.BaseCommand):
         self.argv = argv
 
         return base_command.BaseCommand.parse(self, argv)
-        
+
 
     def do(self, args):
 
@@ -144,7 +144,7 @@ class Group(base_command.BaseCommand):
         if self.options.exclude:
             exclude = self._parse_args_list(self.options.exclude)
             exclude = self._match_group_host(exclude)
-            
+
             for g_i,g_e in zip(args.iteritems(),exclude.iteritems()):
                 for host_include,host_exclude in zip(g_i[1],g_e[1]):
                     self.group.add_hosts_to_group_glob(g_i[0][1:],host_include,exclude_string=host_exclude)
@@ -189,7 +189,7 @@ class Group(base_command.BaseCommand):
             print self.group.get_hosts_glob(args,exclude_string=self.options.exclude)
         else:
             print self.group.get_hosts_glob(args)
-    
+
     def _parse_args_list(self,args):
         """
         Parsing the args sometimes we separate em
@@ -203,7 +203,7 @@ class Group(base_command.BaseCommand):
 
     def _match_group_host(self,args):
         """
-        Returns a dictionary for 
+        Returns a dictionary for
         {group:hosts}
         """
         groups = {}
@@ -225,5 +225,3 @@ class Group(base_command.BaseCommand):
                     groups[group]=[]
                     groups[group].append("*")
         return groups
-
-

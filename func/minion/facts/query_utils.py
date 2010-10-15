@@ -38,5 +38,3 @@ class Q(tree.Node):
         obj = deepcopy(self)
         obj.negate()
         return obj
-
-

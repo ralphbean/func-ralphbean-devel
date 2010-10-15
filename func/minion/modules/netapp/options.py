@@ -50,6 +50,3 @@ class Options(func_module.FuncModule):
         output = ssh(filer, cmd_opts)
         # should return no output (maybe a space or newline)
         return check_output("^\s*$", output)
-
-
-    

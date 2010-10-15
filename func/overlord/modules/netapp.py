@@ -45,10 +45,10 @@ class Filer(Client):
         return _(self.netapp.vol.destroy(self.filer, vol)[self.admin_host])
 
     def offline_volume(self, vol):
-        return _(self.netapp.vol.offline(self.filer, vol)[self.admin_host])                 
+        return _(self.netapp.vol.offline(self.filer, vol)[self.admin_host])
 
     def online_volume(self, vol):
-        return _(self.netapp.vol.online(self.filer, vol)[self.admin_host])                 
+        return _(self.netapp.vol.online(self.filer, vol)[self.admin_host])
 
     def get_volume_size(self, vol):
         return _(self.netapp.vol.size(self.filer, vol)[self.admin_host])

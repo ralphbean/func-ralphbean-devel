@@ -31,7 +31,7 @@ class FuncCoverage(Plugin):
     """
     coverTests = False
     coverPackages = None
-    
+
     def options(self, parser, env=os.environ):
         Plugin.options(self, parser, env)
         parser.add_option("--func-cover-package", action="append",
@@ -66,7 +66,7 @@ class FuncCoverage(Plugin):
                           "discovering holes in test coverage if not all "
                           "files are imported by the test suite. "
                           "[FUNC_NOSE_COVER_INCLUSIVE]")
-        
+
 
     def configure(self, options, config):
         Plugin.configure(self, options, config)
@@ -91,7 +91,7 @@ class FuncCoverage(Plugin):
         if self.coverPackages:
             log.info("Coverage report will include only packages: %s",
                      self.coverPackages)
-            
+
     def begin(self):
         log.debug("Coverage begin")
         import coverage
@@ -101,7 +101,7 @@ class FuncCoverage(Plugin):
             coverage.erase()
         coverage.exclude('#pragma[: ]+[nN][oO] [cC][oO][vV][eE][rR]')
         coverage.start()
-        
+
     def report(self, stream):
         log.debug("Coverage report")
         import coverage
@@ -130,7 +130,7 @@ class FuncCoverage(Plugin):
                     and (self.coverTests
                          or not self.conf.testMatch.search(name))):
                     log.debug("coverage for %s", name)
-                    return True                
+                    return True
         if name in self.skipModules:
             log.debug("no coverage for %s: loaded before coverage start",
                       name)
@@ -143,12 +143,12 @@ class FuncCoverage(Plugin):
         # module, we would have already returned True
         return not self.coverPackages
 
-    def wantFile(self, file, package=None):    
-        """If inclusive coverage enabled, return true for all source files 
+    def wantFile(self, file, package=None):
+        """If inclusive coverage enabled, return true for all source files
         in wanted packages.
         """
         if self.coverInclusive:
-            if file.endswith(".py"): 
+            if file.endswith(".py"):
                 if package and self.coverPackages:
                     for want in self.coverPackages:
                         if package.startswith(want):
@@ -156,4 +156,3 @@ class FuncCoverage(Plugin):
                 else:
                     return True
         return None
-    

@@ -1,5 +1,5 @@
 #
-# Copyright 2008 
+# Copyright 2008
 # Luca Foppiano <lfoppiano@byte-code.com>
 # Simone Pucci <spucci@byte-code.com>
 # Byte-code srl www.byte-code.com
@@ -28,15 +28,15 @@ class JBoss(func_module.FuncModule):
     version = "0.0.3"
     api_version = "0.0.2"
     description = "JBoss monitoring and control module"
-    
+
     def status(self):
         """
             Get jboss information
             (instance name, ports, bind address, pid)
-        """  
+        """
         processo = process.ProcessModule()
-        results = processo.info("ax") 
-    
+        results = processo.info("ax")
+
         logging = logger.Logger().logger
         output = []
         for items in results:
@@ -73,7 +73,7 @@ class JBoss(func_module.FuncModule):
             except:
                 address_port = None
                 pid_name = None
-    
+
             if address_port != None:
                 try:
                     address = address_port.split(":")[0]
@@ -87,7 +87,7 @@ class JBoss(func_module.FuncModule):
                     pid = int(pid_name.split("/")[0])
                 except:
                     pid = None
-            
+
             if pid != None:
                 for data in output:
                     if data[0] == pid:
@@ -106,8 +106,8 @@ class JBoss(func_module.FuncModule):
 
             Return values:
                 - instance up but not listen = (-1, instances with problem)
-                - OK = (0, [])                
-        """     
+                - OK = (0, [])
+        """
         if(status == None):
             data = self.status()
         else:
@@ -119,7 +119,7 @@ class JBoss(func_module.FuncModule):
             if len(item[3]) == 0:
                 code = -1
                 result.append(item)
-        
+
         return (code, result)
 
 
@@ -139,7 +139,7 @@ class JBoss(func_module.FuncModule):
             for ports in item[3]:
                 if port == ports:
                     founded.append(item)
-        
+
         return founded
 
 
@@ -157,7 +157,7 @@ class JBoss(func_module.FuncModule):
         for item in data:
             if item[1] == instance:
                 founded.append(item)
-        
+
         return founded
 
     def search_by_address(self, address, status=None):
@@ -174,7 +174,7 @@ class JBoss(func_module.FuncModule):
         for item in data:
             if item[2] == address:
                 founded.append(item)
-        
+
         return founded
 
     def static_configuration(self):
@@ -183,10 +183,10 @@ class JBoss(func_module.FuncModule):
             configuration file.
         '''
         return (self.options.jboss_home, self.options.jboss_address, self.options.jboss_instance)
- 
+
     def start(self):
         '''
-           Start a jboss instance 
+           Start a jboss instance
         '''
         logging = logger.Logger().logger
 
@@ -196,7 +196,7 @@ class JBoss(func_module.FuncModule):
         jboss_run_path=self.options.jboss_home+"/bin/run.sh"
 
         status=self.status()
-    
+
         if len(self.search_by_address(address=address, status=status)) != 0:
             return (-1,"Another instances listening on this address, ")
 
@@ -208,14 +208,14 @@ class JBoss(func_module.FuncModule):
 
         comm = command.Command()
         comm.run(launcher)
-        
+
         return "OK, instance "+ instance +" started on address "+address
 
 
     def stop(self):
         '''
-            Stop a jboss instance, It suppose you are using 
-            use standard JNDI port 1099. 
+            Stop a jboss instance, It suppose you are using
+            use standard JNDI port 1099.
         '''
         logging = logger.Logger().logger
 
@@ -227,7 +227,7 @@ class JBoss(func_module.FuncModule):
 
         if len(data) == 0:
             return (-1, "Istance on "+ address +" not running")
-    
+
         launcher ="sh "+str(jboss_sd_path)+" -s jnp://"+address+":1099 &"
         logging.info(launcher)
 
@@ -240,6 +240,4 @@ class JBoss(func_module.FuncModule):
     class Config(BaseConfig):
         jboss_home=Option('/var/lib/jboss')
         jboss_instance=Option('default')
-        jboss_address=Option('127.0.0.1') 
-
-
+        jboss_address=Option('127.0.0.1')

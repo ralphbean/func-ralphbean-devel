@@ -93,7 +93,7 @@ class Httpd(func_module.FuncModule):
                                  'description':'True if the server is an ssl server'
                                  }
                              },
-                                 
+
 
                     'description':'Check the httpd status on a server'
                     }

@@ -42,7 +42,7 @@ def check_policy(chain):
             return False
     except:
         return False
-        
+
 def set_policy(chain, policy):
     return call_iptables("-P %s %s" % (chain, policy) )
 

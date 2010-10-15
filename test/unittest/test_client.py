@@ -40,7 +40,7 @@ class BaseTest:
 
     def test_module_api_version(self):
         mod = getattr(self.overlord, self.module)
-        result = mod.module_api_version()        
+        result = mod.module_api_version()
         self.assert_on_fault(result)
 
     def test_module_description(self):
@@ -121,7 +121,7 @@ class TestTest(BaseTest):
         result = self.overlord.test.echo(data)
         self.assert_on_fault(result)
         assert result[self.th] == data
-        
+
     # this tests are basically just to test the basic
     # marshalling/demarshaling bits
     def test_echo_int(self):
@@ -188,11 +188,11 @@ class TestTest(BaseTest):
         self.assert_on_fault(result)
 
     def test_config_get_string(self):
-	result = self.overlord.test.config_get("string_option")
+        result = self.overlord.test.config_get("string_option")
         option = result[self.th]
         print option
         assert(type(option) == type("foo"))
-	self.assert_on_fault(result)
+        self.assert_on_fault(result)
 
     def test_config_get_int(self):
         result = self.overlord.test.config_get("int_option")
@@ -213,8 +213,8 @@ class TestTest(BaseTest):
         self.assert_on_fault(result)
 
     def test_config_get_test(self):
-	result = self.overlord.test.config_get_test()
-	self.assert_on_fault(result)
+        result = self.overlord.test.config_get_test()
+        self.assert_on_fault(result)
 
 
 
@@ -236,10 +236,10 @@ class TestCommand(BaseTest):
 
 
     def test_env(self):
-	result = self.overlord.command.run("env",
-				           {'BLIPPYFOO':'awesome'})
-	self.assert_on_fault(result)
-	assert result[self.th][1].find("BLIPPYFOO=awesome") != -1
+        result = self.overlord.command.run("env",
+                                           {'BLIPPYFOO':'awesome'})
+        self.assert_on_fault(result)
+        assert result[self.th][1].find("BLIPPYFOO=awesome") != -1
 
 #    def test_sleep_long(self):
 #        result = self.overlord.command.run("sleep 256")
@@ -273,7 +273,7 @@ class TestCopyfile(BaseTest):
     content = "this is a func test file"
     module = "copyfile"
     def create_a_file(self, size=1):
-        
+
         f = open(self.fn, "w")
         f.write(self.content*size)
         f.close()
@@ -291,12 +291,12 @@ class TestCopyfile(BaseTest):
         result = self.overlord.copyfile.copyfile(self.dest_fn, data)
         self.assert_on_fault(result)
         assert result[self.th]  == 0
-        
+
  #   def test_copyfile_big(self):
  #       # make a file in the ~70 meg range
  #       self.test_copyfile(size=100)
-        
- 
+
+
     def test_checksum(self):
         self.create_a_file()
         fb = open(self.fn,"r").read()
@@ -307,7 +307,7 @@ class TestCopyfile(BaseTest):
         assert result[self.th] == "b36a8040e44c16605d7784cdf1b3d9ed04ea7f55"
 
 
-       
+
 
 class TestHardware(BaseTest):
     module = "hardware"
@@ -405,10 +405,10 @@ class TestNetworkTest(BaseTest):
         self.assert_on_fault(result)
 
     def test_ping_bad_arg(self):
-         result = self.overlord.networktest.ping(self.th)
-         # this should give us a FuncException
-         foo = func.utils.is_error(result[self.th]) 
-         
+        result = self.overlord.networktest.ping(self.th)
+        # this should give us a FuncException
+        foo = func.utils.is_error(result[self.th])
+
     def test_netstat(self):
         result = self.overlord.networktest.netstat("-n")
         self.assert_on_fault(result)
@@ -450,7 +450,7 @@ class TestService(BaseTest):
     def test_inventory(self):
         result = self.overlord.service.inventory()
         self.assert_on_fault(result)
-    
+
     def test_get_enabled(self):
         result = self.overlord.service.get_enabled()
         self.assert_on_fault(result)
@@ -516,7 +516,7 @@ class TestSmart(BaseTest):
         result = self.overlord.smart.info()
         self.assert_on_fault(result)
 
-   
+
 
 class TestSysctl(BaseTest):
     module = "sysctl"
@@ -585,22 +585,22 @@ class TestIptablesPort(BaseTest):
 #        result = self.overlord.httpd.graceful()
 #        self.assert_on_fault(result)
 
-        
+
 class TestEchoTest(BaseTest):
     module = "echo"
 
     def test_run_string(self):
         result=self.overlord.echo.run_string("heyman")
         self.assert_on_fault(result)
-        
+
     def test_run_int(self):
         result=self.overlord.echo.run_int(12)
         self.assert_on_fault(result)
-        
+
     def test_run_float(self):
         result=self.overlord.echo.run_float(12.0)
         self.assert_on_fault(result)
-        
+
     def test_run_options(self):
         result=self.overlord.echo.run_options("hehehh")
         self.assert_on_fault(result)
@@ -642,7 +642,7 @@ class TestFactsModule(BaseTest):
             result = self.overlord.fact.show_fact_module(module)
             print result
             self.assert_on_fault(result)
-    
+
     def test_show_fact_method(self):
         methods = self.overlord.fact.list_fact_methods().values()
         print "Methods to run for show fact method are ",methods
@@ -666,11 +666,11 @@ class TestSystem(BaseTest):
         result = self.overlord.system.list_methods()
         self.assert_on_fault(result)
 
-    
+
     def test_listMethods(self):
         result = self.overlord.system.listMethods()
         self.assert_on_fault(result)
-    
+
     def test_list_modules(self):
         result = self.overlord.system.list_modules()
         self.assert_on_fault(result)

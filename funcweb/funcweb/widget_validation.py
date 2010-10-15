@@ -9,7 +9,7 @@ class WidgetSchemaFactory(object):
 
     def __init__(self,method_argument_dict):
         """
-        @param method_argument_dict : The dict that is 
+        @param method_argument_dict : The dict that is
         from minion in format of {'arg':{'type':'string','options':[...]}}
         the format is defined in func/minion/func_arg.py
         """
@@ -21,9 +21,9 @@ class WidgetSchemaFactory(object):
         """
         Method is an entry point of factory iters over the all arguments
         and according to their types it sends the process to more specialized
-        validator adders 
+        validator adders
         """
-        # a mirror var to show that these are same things 
+        # a mirror var to show that these are same things
         mirror_case = {'list*':'list'}
         for argument_name,argument_values in self.method_argument_dict.iteritems():
             #some lazy stuff :)
@@ -36,22 +36,22 @@ class WidgetSchemaFactory(object):
 
     def _add_boolean_validator(self,argument_name):
         bool_data_set = {}
-        
+
         #the optional keyword
         if self.method_argument_dict[argument_name].has_key('optional'):
             if self.method_argument_dict[argument_name]['optional']:
                 bool_data_set['not_empty']=False
             else:
                 bool_data_set['not_empty']=True
-                
-        
+
+
         if bool_data_set:
             self.validator_list[argument_name]=validators.Bool(**bool_data_set)
         else:
             self.validator_list[argument_name]=validators.Bool()
 
 
- 
+
 
     def _add_int_validator(self,argument_name):
         """
@@ -60,14 +60,14 @@ class WidgetSchemaFactory(object):
         """
         #the initializer for the int_validator
         int_data_set = {}
-        
+
         #the optional keyword
         if self.method_argument_dict[argument_name].has_key('optional'):
             if self.method_argument_dict[argument_name]['optional']:
                 int_data_set['not_empty']=False
             else:
                 int_data_set['not_empty']=True
-                
+
         if self.method_argument_dict[argument_name].has_key('range'):
             #because the range is [min,max] list the 0 is min 1 is the max
             int_data_set['min']=self.method_argument_dict[argument_name]['range'][0]
@@ -85,7 +85,7 @@ class WidgetSchemaFactory(object):
 
 
 
-    
+
     def _add_string_validator(self,argument_name):
         """
         Gets the options of the string type and adds a
@@ -94,7 +94,7 @@ class WidgetSchemaFactory(object):
 
         string_data_set={}
         str_validator_list =[]
-        
+
         if self.method_argument_dict[argument_name].has_key('optional'):
             if self.method_argument_dict[argument_name]['optional']:
                 string_data_set['not_empty']=False
@@ -111,7 +111,7 @@ class WidgetSchemaFactory(object):
         #if we have set a string_data_set
         if string_data_set:
             str_validator_list.append(getattr(validators,'String')(**string_data_set))
-        
+
         #if true it should be a validator.All thing
         if len(str_validator_list)>1:
             self.validator_list[argument_name]=getattr(validators,'All')(*str_validator_list)
@@ -131,14 +131,14 @@ class WidgetSchemaFactory(object):
 
         #the initializer for the float_validator
         float_data_set = {}
-        
+
         #is it optional
         if self.method_argument_dict[argument_name].has_key('optional'):
             if self.method_argument_dict[argument_name]['optional']:
                 float_data_set['not_empty']=False
             else:
                 float_data_set['not_empty']=True
-         
+
 
         if self.method_argument_dict[argument_name].has_key('min'):
             float_data_set['min']=self.method_argument_dict[argument_name]['min']
@@ -159,17 +159,17 @@ class WidgetSchemaFactory(object):
         new validator to validator_list
         """
         list_data_set = {}
-        
+
         #is it optional
         if self.method_argument_dict[argument_name].has_key('optional'):
             if self.method_argument_dict[argument_name]['optional']:
                 list_data_set['not_empty']=False
             else:
                 list_data_set['not_empty']=True
-                
+
         if self.method_argument_dict[argument_name].has_key('validator'):
             list_data_set['regex_string'] = self.method_argument_dict[argument_name]['validator']
-            
+
         if list_data_set:
             if the_type == 'list':
                 self.validator_list[argument_name]=MinionListValidator(**list_data_set)
@@ -211,7 +211,7 @@ class MinionIntValidator(validators.FancyValidator):
 
     """
     Confirms that the input/output is of the proper type of int.
-    
+
     """
     #automatically will be assigned
     min = None
@@ -228,8 +228,8 @@ class MinionIntValidator(validators.FancyValidator):
             raise validators.Invalid('The field should be integer',value,state)
 
         return int(value)
-        
-    
+
+
     def validate_python(self,value,state):
         """
         The actual validator
@@ -238,15 +238,15 @@ class MinionIntValidator(validators.FancyValidator):
         if self.min and self.min:
             if value < self.min:
                 raise validators.Invalid('The number you entered should be bigger that %d'%(self.min),value,state)
-        
+
         if self.max and self.max:
             if value > self.max:
                 raise validators.Invalid('The number you entered exceeds the %d'%(self.max),value,state)
 
-        
+
 ##################################################################
 class MinionFloatValidator(MinionIntValidator):
-    
+
     def _to_python(self,value,state):
         """
         Will check just the type here and return
@@ -258,10 +258,10 @@ class MinionFloatValidator(MinionIntValidator):
             raise validators.Invalid('The field should be a float',value,state)
 
         return float(value)
- 
+
 #################################################################
 class MinionListValidator(validators.FancyValidator):
-    
+
     regex_string = None
 
     def _to_python(self,value,state):
@@ -269,7 +269,7 @@ class MinionListValidator(validators.FancyValidator):
         Will check just the type here and return
         value to be validated in validate_python
         """
-        #will add more beautiful validation here after 
+        #will add more beautiful validation here after
         #integrate the complex widgets for lists and dicts
         #print "Im in the list validator the value i recieved is : ",value
 
@@ -281,12 +281,12 @@ class MinionListValidator(validators.FancyValidator):
         tmp = []
         if type(tmp) != type(value):
             value = list(value)
-        
-        #concert the data to proper format 
+
+        #concert the data to proper format
         final_list = []
         for hash_data in value:
             final_list.extend(hash_data.values())
-    
+
         return final_list
 
     def validate_python(self,value,state):
@@ -296,15 +296,15 @@ class MinionListValidator(validators.FancyValidator):
                 compiled_regex = re.compile(self.regex_string)
             except Exception,e:
                 raise validators.Invalid('The passed regex_string is not a valid expression'%self.regex_string,value,state)
-            
+
             for list_value in value:
                 if not re.match(compiled_regex,str(list_value)):
                     raise validators.Invalid('The %s doesnt match to the regex expression that was supplied'%list_value,value,state)
 
-        #there is no else for now :) 
+        #there is no else for now :)
 
 class MinionHashValidator(validators.FancyValidator):
-    
+
     regex_string = None
 
     def _to_python(self,value,state):
@@ -312,26 +312,26 @@ class MinionHashValidator(validators.FancyValidator):
         Will check just the type here and return
         value to be validated in validate_python
         """
-        #will add more beautiful validation here after 
+        #will add more beautiful validation here after
         #integrate the complex widgets for lists and dicts
         #print "Im in hash validator the value i recieved is ",value
 
         if self.not_empty:
             if len(value)==0:
                 raise validators.Invalid('Empty hash passed when not_empty is set',value,state)
-            
-        #concert the data to proper format 
+
+        #concert the data to proper format
         final_hash = {}
         for hash_data in value:
             final_hash[hash_data['keyfield']] = hash_data['valuefield']
 
-    
+
 
        #check the type firstly
         tmp = {}
         if type(tmp) != type(final_hash):
             raise validators.Invalid('The value passed to MinionHashValidator should be a dict object',final_hash,state)
-        
+
         #print value
         return final_hash
 

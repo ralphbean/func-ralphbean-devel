@@ -69,7 +69,7 @@ class HardwareModule(func_module.FuncModule):
 
     def grep(self,word):
         """
-        Find something in hardware info 
+        Find something in hardware info
         """
         result = {self.info:[]}
         hw_info = self.info()
@@ -80,11 +80,11 @@ class HardwareModule(func_module.FuncModule):
         for hw_k,hw_v in hw_info.iteritems():
             if hw_k.lower().find(word)!=-1:
                 result[self.info].append({hw_k:hw_v})
-            #we should see if the value is 
+            #we should see if the value is
             elif type(hw_v)==str and hw_v.lower().find(word)!=-1:
                 result[self.info].append({hw_k:hw_v})
             elif type(hw_v)==list:
-                #as it si known the hw_info has a devices 
+                #as it si known the hw_info has a devices
                 #in its final data and it is in format of:
                 #[{key:val}] so should check it also
                 for device in hw_v:
@@ -93,7 +93,7 @@ class HardwareModule(func_module.FuncModule):
                             result[self.info].append({d_k:d_v})
                         elif d_v.lower().find(word)!=-1:
                             result[self.info].append({d_k:d_v})
-        
+
         #get the final result
         return result
     grep = func_module.findout(grep)
@@ -118,7 +118,7 @@ class HardwareModule(func_module.FuncModule):
             errmsg = _("Import error while loading smolt module. Smolt is probably not installed. This method is useless without it.")
             self.logger.warning(errmsg)
             self.logger.warning("%s" % traceback.format_exc())
-            # hmm, what to return... 
+            # hmm, what to return...
             return []
 
         hardware = smolt.Hardware()
@@ -196,4 +196,3 @@ class HardwareModule(func_module.FuncModule):
                     }
 
     # =================================
-

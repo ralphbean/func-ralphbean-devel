@@ -4,7 +4,7 @@
 NUMBER_OF_TEST_MINIONS = 10000
 PICKLE_PLACE = "/tmp/minion.pkl"
 
-   
+
 import pickle
 import fnmatch
 from func.overlord.client import Minions
@@ -13,7 +13,7 @@ from certmaster.commonconfig import CMConfig
 import os
 
 class BaseMinions(object):
-    
+
     def create_dummy_minions(self,howmany=NUMBER_OF_TEST_MINIONS):
         """
         Creates a lots of minions so we can query
@@ -22,7 +22,7 @@ class BaseMinions(object):
 
         cm_config = read_config(CONFIG_FILE, CMConfig)
         howmany = howmany or 100 #it is a good default number
-        
+
         final_list = []
         for m in xrange(howmany):
             tmp_f = open("%s/%s.%s" % (cm_config.certroot,str(m),cm_config.cert_extension),"w")
@@ -59,16 +59,16 @@ class FromPickle(Minions):
         """
         #these will be returned
         tmp_certs = set()
-        
+
         all_minions = self.load_minions()
         hosts = fnmatch.filter(all_minions.keys(),each_gloob)
-        
+
         for h in hosts:
             tmp_certs.add(all_minions[h])
-        
+
         print "ALL DONE"
         return set(hosts),tmp_certs
-    
+
     def prepare_pickle(self):
         final_dict = {}
         for i in xrange(NUMBER_OF_TEST_MINIONS):
@@ -96,15 +96,15 @@ class FromFile(Minions):
         """
         #these will be returned
         tmp_certs = set()
-        
+
         hosts = self.load_minions()
         hosts = fnmatch.filter(hosts,each_gloob)
-        
+
         for h in hosts:
             tmp_certs.add("%s/%s.%s" % (self.cm_config.certroot,h, self.cm_config.cert_extension))
-        
+
         return set(hosts),tmp_certs
-    
+
     def prepare_pickle(self):
         p_file = open(PICKLE_PLACE,"w")
         final_list = []
@@ -135,12 +135,12 @@ class FromDb(Minions):
         tmp_certs = set()
         all_minions = self.load_minions()
         hosts = fnmatch.filter(all_minions.keys(),each_gloob)
-        
+
         for h in hosts:
             tmp_certs.add(all_minions[h])
-        
+
         return set(hosts),tmp_certs
-    
+
 
     def prepare_pickle(self):
         p_file = open(PICKLE_PLACE,"w")
@@ -149,7 +149,7 @@ class FromDb(Minions):
 
         for i in xrange(NUMBER_OF_TEST_MINIONS):
             storage[str(i)] = "%s/%s.%s" % (self.cm_config.certroot,str(i), self.cm_config.cert_extension)
-        
+
         storage.close()
 
     def load_minions(self):
@@ -166,7 +166,7 @@ def get_glob_list():
     final_list.append("[5-9][0-9][0-9]")
     final_list.append("[1,3,5,8,9][0-9][0-9][0-9]")
     final_list.append("[2,4,6,8][0-9][0-9][0-9]")
-    
+
     #tottal 10 000 + 5 :)
     return final_list
 
@@ -177,19 +177,17 @@ if __name__ == "__main__":
     fi = FromDb("*")
     fi.prepare_pickle()
     for glob in get_glob_list():
-        
+
         f=FromDb(glob)
         print f.get_all_hosts()
         #f=FromFile(glob)
         #print f.get_all_hosts()
-    
+
 
     b.clean_dummy_minions()
-    
+
     #fi = FromPickle("*")
     #fi.prepare_pickle()
     #for glob in get_glob_list():
     #f=FromPickle(glob)
     #    print f.get_all_hosts()
-    
-

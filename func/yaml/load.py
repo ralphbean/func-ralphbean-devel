@@ -20,7 +20,7 @@ except:
             self._docs = []
             try:
                 while 1:
-                   self._docs.append(parser.next())
+                    self._docs.append(parser.next())
             except StopIteration: pass
             self._idx = 0
         def __len__(self): return len(self._docs)

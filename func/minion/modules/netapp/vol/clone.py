@@ -31,7 +31,7 @@ class Clone(func_module.FuncModule):
         cmd_opts = ['vol', 'clone', 'create', vol, '-b', parent, snap]
         output = ssh(filer, cmd_opts)
         return check_output(regex, output)
-    
+
     def split(self, filer, vol):
         """
         TODO: Document me ...
@@ -42,7 +42,7 @@ class Clone(func_module.FuncModule):
         output = ssh(filer, cmd_opts)
         return check_output(regex, output)
 
-    
+
     def register_method_args(self):
         """
         Implementing netapp.clone export
@@ -52,13 +52,13 @@ class Clone(func_module.FuncModule):
                 'optional':False,
                 'description':"The name of the volume"
                 }
-        
+
         filer = {
                 'type':'string',
                 'optional':False,
                 'description':"Resolvable name of the target filer"
                 }
-        
+
         snap = {
                 'type':'string',
                 'optional':False,
@@ -85,5 +85,5 @@ class Clone(func_module.FuncModule):
                         'vol':vol
                         },
                     'description':"Split the vol"
-                    }   
+                    }
                 }

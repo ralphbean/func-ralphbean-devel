@@ -61,4 +61,3 @@ class PullFile(func_module.FuncModule):
         f.close()
         webFile.close()
         return 0
-

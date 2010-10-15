@@ -17,29 +17,29 @@ from test_client import BaseTest
 config_file_1 = """
 [main]
 option = this is an option from the file
-#option_empty = 
+#option_empty =
 
 int_option = 2222
-#int_option_empty = 
+#int_option_empty =
 
 
 bool_option_true = True
 bool_option_false = False
 bool_option = False
-#bool_option_empty = 
+#bool_option_empty =
 
 list_option = seven,eight,nine
-#list_option_empty = 
+#list_option_empty =
 
 url_list_option = http://www.redhat.com, http://www.fedoraproject.org
-#url_list_option_empty = 
+#url_list_option_empty =
 
 float_option = 2.7182
-#float_option_empty = 
+#float_option_empty =
 float_option_int = 5
 
 bytes_option = 2001M
-#bytes_option_empty = 
+#bytes_option_empty =
 
 """
 
@@ -98,11 +98,11 @@ class ConfigTest(config.BaseConfig):
     float_option = config.FloatOption(3.14159)
     float_option_empty = config.FloatOption()
     float_option_int = config.FloatOption(1.0)
- 
+
    #selection_option
     bytes_option = config.BytesOption("123M")
 #    bytes_option_empty = config.BytesOption()
-    
+
 
 # FIXME: we need a test fixture for testing the config file parsing
 # since it's currently kind of all of nothing if an error occurs, so
@@ -117,8 +117,8 @@ class TestConfig:
 
     def setUp(self):
         f = open(self.config_file, "w+")
-	if not os.access("/tmp/func-test", os.R_OK):
-		os.mkdir("/tmp/func-test")
+        if not os.access("/tmp/func-test", os.R_OK):
+            os.mkdir("/tmp/func-test")
         f.write(config_file_1)
         f.close()
 
@@ -134,12 +134,12 @@ class TestConfig:
         print self.cfg.iteritems()
         for i in self.cfg.iteritems():
             print i
-        
-    
+
+
     def test_config_option(self):
         assert type(self.cfg.option) == type('')
         assert self.exp.option == self.cfg.option
-    
+
     def test_config_int_option(self):
         assert type(self.cfg.int_option) == type(4)
         assert self.exp.int_option == self.cfg.int_option
@@ -180,7 +180,7 @@ class TestConfig:
     def test_config_float_option_int(self):
         print "blip"
         print self.cfg.float_option_int
-        
+
 
 # FIXME: not sure why this is different, but we don't use this option type anyway
 #    def test_config_bytes_option(self):
@@ -204,7 +204,7 @@ class TestConfigSet(TestConfig):
 
     def setUp(self):
         TestConfig.setUp(self)
-        
+
         self.cfg.option = self.exp.option
         self.cfg.bool_option = self.exp.bool_option
         self.cfg.int_option = self.exp.int_option
@@ -217,19 +217,19 @@ class TestConfigSet(TestConfig):
 class TestConfigWrite(TestConfigSet):
     module = "config"
     exp = ConfigFileWriteValues()
-    
+
     def setUp(self):
         TestConfigSet.setUp(self)
 
         filename = "/tmp/func-test/test2.conf"
         f = open(filename, "a+")
-        
+
         self.cfg.write(f, "main")
         f.close()
 
         self.cfg = config.read_config(filename, ConfigTest)
 
-        
+
 
 
 # test cases

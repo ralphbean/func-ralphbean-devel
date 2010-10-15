@@ -62,7 +62,7 @@ class FileTracker(func_module.FuncModule):
     def __save(self, filehash):
         """
         Write data structure to file.
-        """ 
+        """
 
         config = open(CONFIG_FILE, "w+")
         for (path, scan_mode) in filehash.iteritems():
@@ -70,7 +70,7 @@ class FileTracker(func_module.FuncModule):
         config.close()
 
     #==========================================================
-               
+
     def track(self, file_name_globs, full_scan=0, recursive=0, files_only=0):
         """
         Adds files to keep track of.
@@ -138,7 +138,7 @@ class FileTracker(func_module.FuncModule):
         for use by func-inventory.  If you are writting another software application, using flatten=False will
         prevent the need to parse the returns.
         """
- 
+
         # XMLRPC feeds us strings from the CLI when it shouldn't
         flatten = int(flatten)
         checksum_enabled = int(checksum_enabled)
@@ -178,7 +178,7 @@ class FileTracker(func_module.FuncModule):
 
             # ------ what we return depends on flatten
             if flatten:
-                this_result = "%s:  mode=%s  mtime=%s  uid=%s  gid=%s  md5sum=%s\n" % (file_name,mode,mtime,uid,gid,hash) 
+                this_result = "%s:  mode=%s  mtime=%s  uid=%s  gid=%s  md5sum=%s\n" % (file_name,mode,mtime,uid,gid,hash)
             else:
                 this_result = [file_name,mode,mtime,uid,gid,hash]
 
@@ -191,11 +191,11 @@ class FileTracker(func_module.FuncModule):
                 else:
                     this_result.append(data)
                 tracked_file.close()
-           
+
             if os.path.isdir(file_name):
                 if not file_name.endswith("/"):
                     file_name = file_name + "/"
-                files = glob.glob(file_name + "*") 
+                files = glob.glob(file_name + "*")
                 if flatten:
                     this_result = this_result + "*** FILES ***\n" + "\n".join(files) + "\n*** END FILES ***\n\n"
                 else:
@@ -210,26 +210,26 @@ class FileTracker(func_module.FuncModule):
         return results
 
     #==========================================================
-    
+
     def grep(self, word):
         """
         Some search utility about tracked files
         """
         results = {self.inventory:[]}
         tracked_files = self.inventory()
-        
+
         if type(tracked_files) == str and tracked_files.lower().find(word)!=-1:
             results[self.inventory].append(tracked_files)
-             
+
         else:
             for res in tracked_files:
                 if res.lower().find(word)!=-1:
                     results[self.inventory].append(res)
-            
+
         return results
     grep = func_module.findout(grep)
-    
-    
+
+
     def __sumfile(self, fobj):
         """
         Returns an md5 hash for an object with read() method.

@@ -21,11 +21,11 @@ DIRECT = False
 DELEGATED = True
 
 class DelegationModule(func_module.FuncModule):
-    
+
     version = "0.0.1"
     api_version = "0.0.1"
     description = "Minion-side module to support delegation on sub-Overlords."
-    
+
     def run(self,module,method,args,delegation_list,async,nforks):
         """
         Delegates commands down the path of delegation
@@ -33,11 +33,11 @@ class DelegationModule(func_module.FuncModule):
         """
         result_dict = {}
         job_id_list = []
-        
-        #separate list passed to us into minions we can call directly and 
+
+        #separate list passed to us into minions we can call directly and
         #further delegation paths
         (single_paths, grouped_paths) = dtools.group_paths(delegation_list)
-        
+
         #run delegated calls
         for group in grouped_paths.keys():
             overlord = fc.Overlord(group,
@@ -51,7 +51,7 @@ class DelegationModule(func_module.FuncModule):
                                                          async,
                                                          nforks)
             if async:
-                job_id_list.append([overlord, 
+                job_id_list.append([overlord,
                                     delegation_results,
                                     group,
                                     True])
@@ -62,10 +62,10 @@ class DelegationModule(func_module.FuncModule):
                     result_dict.update(delegation_results)
                 else:
                     result_dict.update(delegation_results[group])
-        
+
         #run direct calls
         for minion in single_paths:
-            overlord = fc.Overlord(minion, 
+            overlord = fc.Overlord(minion,
                                    async=async,
                                    nforks=nforks)
             overlord_module = getattr(overlord,module)
@@ -77,7 +77,7 @@ class DelegationModule(func_module.FuncModule):
                                     False])
             else:
                 result_dict.update(results)
-        
+
         #poll async calls
         while len(job_id_list) > 0:
             for job in job_id_list:
@@ -104,5 +104,5 @@ class DelegationModule(func_module.FuncModule):
                     result_dict.update(results)
                     job_id_list.remove(job)
             time.sleep(0.1) #pause a bit so that we don't flood our minions
-        
-        return result_dict 
+
+        return result_dict

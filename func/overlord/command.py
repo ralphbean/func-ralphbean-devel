@@ -121,7 +121,7 @@ class Command:
         self.stdout = stdout
         self.stderr = stderr
         self.parentCommand = parentCommand
-        
+
 
         # create subcommands if we have them
         self.subCommands = {}
@@ -294,4 +294,3 @@ class Command:
         while c.parentCommand:
             c = c.parentCommand
         return c
-

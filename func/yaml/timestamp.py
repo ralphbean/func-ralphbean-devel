@@ -29,28 +29,28 @@ def _parseTime(val):
     siz = len(tpl)
     sec = 0
     if 3 == siz:
-       tpl += [0,0,0,0,0,-1]
+        tpl += [0,0,0,0,0,-1]
     elif 7 == siz:
-       tpl.append(0)
-       tpl.append(-1)
+        tpl.append(0)
+        tpl.append(-1)
     elif 8 == siz:
-       if len(tpl.pop()) > 0: raise ValueError(val)
-       tpl.append(0)
-       tpl.append(-1)
+        if len(tpl.pop()) > 0: raise ValueError(val)
+        tpl.append(0)
+        tpl.append(-1)
     elif 9 == siz or 10 == siz:
-       mn = int(tpl.pop())
-       hr = int(tpl.pop())
-       sec = (hr*60+mn)*60
-       if val.find("+") > -1: sec = -sec
-       if 10 == siz: tpl.pop()
-       tpl.append(0)
-       tpl.append(-1)
+        mn = int(tpl.pop())
+        hr = int(tpl.pop())
+        sec = (hr*60+mn)*60
+        if val.find("+") > -1: sec = -sec
+        if 10 == siz: tpl.pop()
+        tpl.append(0)
+        tpl.append(-1)
     else:
-       raise ValueError(val)
+        raise ValueError(val)
     idx = 0
     while idx < 9:
-       tpl[idx] = int(tpl[idx])
-       idx += 1
+        tpl[idx] = int(tpl[idx])
+        idx += 1
     if tpl[1] < 1 or tpl[1] > 12: raise ValueError(val)
     if tpl[2] < 1 or tpl[2] > 31: raise ValueError(val)
     if tpl[3] > 24: raise ValueError(val)
@@ -69,16 +69,16 @@ def _parseTime(val):
 class _timestamp:
     def __init__(self,val=None):
         if not val:
-           self.__tval = time.gmtime()
+            self.__tval = time.gmtime()
         else:
-           typ = type(val)
-           if ListType == typ:
-               self.__tval = tuple(val)
-           elif TupleType == typ:
-               self.__tval = val
-           else:
-               self.__tval = _parseTime(val)
-           if 9 != len(self.__tval): raise ValueError
+            typ = type(val)
+            if ListType == typ:
+                self.__tval = tuple(val)
+            elif TupleType == typ:
+                self.__tval = val
+            else:
+                self.__tval = _parseTime(val)
+            if 9 != len(self.__tval): raise ValueError
     def __getitem__(self,idx): return self.__tval[idx]
     def __len__(self): return 9
     def strftime(self,format): return time.strftime(format,self.__tval)
@@ -103,7 +103,7 @@ try: # inherit from mx.DateTime functionality if available
             _timestamp.__init__(self,val)
             self.__mxdt = DateTime.mktime(self.__tval)
         def __getattr__(self, name):
-              return getattr(self.__mxdt, name)
+            return getattr(self.__mxdt, name)
 except:
     class timestamp(_timestamp): pass
 

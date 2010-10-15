@@ -46,7 +46,7 @@ class CopyFile(base_command.BaseCommand):
         if not self.options.filename or not self.options.remotepath:
             self.outputUsage()
             return
-        
+
         self.server_spec = self.parentCommand.server_spec
         self.getOverlord()
 

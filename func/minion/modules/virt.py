@@ -457,7 +457,7 @@ class Virt(func_module.FuncModule):
                         for el in strxml:
                             if(strxml[el] != 'None'):
                                 node2.setAttribute(el,strxml[el])
-            
+
                 output_xml = open("/etc/libvirt/qemu/%s.xml" % vmid, 'w')
                 output_xml.write(node.toxml())
                 return 0

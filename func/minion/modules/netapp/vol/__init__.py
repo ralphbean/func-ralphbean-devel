@@ -31,7 +31,7 @@ class Vol(func_module.FuncModule):
         cmd_opts = ['vol', 'create', vol, aggr, size]
         output = ssh(filer, cmd_opts)
         return check_output(regex, output)
-    
+
     def destroy(self, filer, vol):
         """
         TODO: Document me ...
@@ -75,7 +75,7 @@ class Vol(func_module.FuncModule):
             tokens = line.split()
             if len(tokens) >= 2 and tokens[1] in ('online', 'offline', 'restricted'):
                 if current_vol: vols.append(current_vol)
-                current_vol = {'name': tokens[0], 
+                current_vol = {'name': tokens[0],
                                'state': tokens[1],
                                'status': [foo for foo in tokens[2:] if '=' not in foo],
                                'options': [foo for foo in tokens[2:] if '=' in foo]}
@@ -99,7 +99,7 @@ class Vol(func_module.FuncModule):
         stat_regex = """vol size: Flexible volume .* has size .*."""
         resize_regex = """vol size: Flexible volume .* size set to .*."""
         cmd_opts = ['vol', 'size', vol]
-        
+
         if delta:
             cmd_opts.append(delta)
             output = ssh(filer, cmd_opts)
@@ -136,7 +136,7 @@ class Vol(func_module.FuncModule):
                 'optional':False,
                 'description':"The name of the volume"
                 }
-        
+
         filer = {
                 'type':'string',
                 'optional':False,
@@ -144,7 +144,7 @@ class Vol(func_module.FuncModule):
                 }
 
         return {
-                
+
                 'create':{
                     'args':{
                         'filer':filer,
