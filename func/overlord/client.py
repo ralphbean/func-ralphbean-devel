@@ -19,6 +19,7 @@ import os
 import time
 import shlex
 import subprocess
+from exceptions import Exception
 import re
 import fnmatch
 import func.yaml as yaml
@@ -495,7 +496,7 @@ class Overlord(object):
             try:
                 mapstream = file(self.mapfile, 'r').read()
                 self.minionmap = yaml.load(mapstream).next()
-            except e:
+            except Exception, e:
                 sys.stderr.write("mapfile load failed, switching delegation off")
                 self.delegate = False
 
