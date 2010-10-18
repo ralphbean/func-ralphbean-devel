@@ -35,7 +35,15 @@ if __name__ == "__main__":
                  "scripts/func-inventory",
                  "scripts/func-create-module",
                  "scripts/func-transmit",
-                 "scripts/func-build-map"
+                 "scripts/func-build-map",
+                 "scripts/func-command",
+                 "scripts/func-down-hosts",
+                 "scripts/func-find-user",
+                 "scripts/func-grep",
+                 "scripts/func-list-vms-per-host",
+                 "scripts/func-ps-compare",
+                 "scripts/func-whatsmyname",
+                 "scripts/func-yum",
             ],
             package_dir = {"%s" % NAME: "%s" % NAME
             },
