@@ -24,23 +24,25 @@ import fnmatch
 import glob
 import os
 import md5
+import shelve
 
 # defaults
-CONFIG_FILE='/etc/func/modules/filetracker.conf'
+OLD_CONFIG_FILE='/etc/func/modules/filetracker.conf'
+CONFIG_FILE='/etc/func/modules/filetracker.shelf'
+F_ATTR_NAMES = ['mode', 'mtime', 'uid', 'gid', 'md5sum']
 
 class FileTracker(func_module.FuncModule):
 
-    version = "0.0.1"
+    version = "0.0.2"
     api_version = "0.0.2"
     description = "Maintains a manifest of files to keep track of."
 
-    def __load(self):
+    def __migrate(self):
         """
-        Parse file and return data structure.
+        Migrate from a v0.0.1 filehash to a v0.0.2 filehash
         """
-
         filehash = {}
-        if os.path.exists(CONFIG_FILE):
+        if os.path.exists(OLD_CONFIG_FILE):
             config = open(CONFIG_FILE, "r")
             data   = config.read()
             lines  = data.split("\n")
@@ -54,7 +56,29 @@ class FileTracker(func_module.FuncModule):
                     scan_mode = 0
                 else:
                     scan_mode = 1
-                filehash[path] = scan_mode
+            filehash[path] = {'scan_mode' : scan_mode }
+        else:
+            raise IOError, "no such file %s" % OLD_CONFIG_FILE
+        # Save the loaded hash out to the new format
+        self.__save(filehash)
+        # Get rid of the old config file so we never run this method again
+        os.remove(OLD_CONFIG_FILE)
+
+    #==========================================================
+
+    def __load(self):
+        """
+        Parse file and return data structure.
+        """
+
+        if os.path.exists(OLD_CONFIG_FILE):
+            self.__migrate()
+
+        filehash = {}
+        if os.path.exists(CONFIG_FILE):
+            d = shelve.open(CONFIG_FILE)
+            filehash = d['filehash']
+            d.close()
         return filehash
 
     #==========================================================
@@ -64,14 +88,14 @@ class FileTracker(func_module.FuncModule):
         Write data structure to file.
         """
 
-        config = open(CONFIG_FILE, "w+")
-        for (path, scan_mode) in filehash.iteritems():
-            config.write("%s     %s\n" % (scan_mode, path))
-        config.close()
+        d = shelve.open(CONFIG_FILE)
+        d['filehash'] = filehash
+        d.close()
 
     #==========================================================
 
-    def track(self, file_name_globs, full_scan=0, recursive=0, files_only=0):
+    def track(self, file_name_globs,
+              full_scan=0, recursive=0, files_only=0, ignore=''):
         """
         Adds files to keep track of.
         file_names can be a single filename, a list of filenames, a filename glob
@@ -79,7 +103,20 @@ class FileTracker(func_module.FuncModule):
         full_scan implies tracking the full contents of the file, defaults to off
         recursive implies tracking the contents of every subdirectory
         files_only implies tracking files that are files (not directories)
+        ignore is a list of file properties to ignore
+            valid values are any of F_ATTR_NAMES
         """
+
+        # ignore might be a list or a str.  make it a list and remove ''
+        if isinstance(ignore, str):
+            ignore = ignore.split(',')
+        ignore = [attr for attr in ignore if not attr is '']
+
+        # check that no values passed in `ignore` are invalid
+        for attr in ignore:
+            if not attr in F_ATTR_NAMES:
+                msg = "ignore: '%s' is not in %s" % (attr, str(F_ATTR_NAMES))
+                raise ValueError, msg
 
         filehash = self.__load()
         filenameglobs = []
@@ -106,7 +143,7 @@ class FileTracker(func_module.FuncModule):
             if files_only:
                 filenames = [f for f in filenames if os.path.isfile(f)]
             for filename in filenames:
-                filehash[filename] = full_scan
+                filehash[filename] = {'full_scan': full_scan, 'ignore': ignore}
         self.__save(filehash)
         return 1
 
@@ -122,12 +159,14 @@ class FileTracker(func_module.FuncModule):
 
         filehash = self.__load()
         filenames = filehash.keys()
+        matched = 0
         for filename in filenames:
             for file_name_glob in file_name_globs:
                 if fnmatch.fnmatch(filename, file_name_glob):
+                    matched = 1
                     del filehash[filename]
         self.__save(filehash)
-        return 1
+        return matched
 
     #==========================================================
 
@@ -152,7 +191,11 @@ class FileTracker(func_module.FuncModule):
         else:
             results = []
 
-        for (file_name, scan_type) in filehash.iteritems():
+        filenames = sorted(filehash.keys())
+        for file_name in file_names:
+            config = filehash[file_name]
+            scan_type = config.get('scan_type', 0)
+            ignore = config.get('ignore', [])
 
             if not os.path.exists(file_name):
                 if flatten:
@@ -163,24 +206,38 @@ class FileTracker(func_module.FuncModule):
 
             this_result = []
 
-            # ----- always process metadata
-            filestat = os.stat(file_name)
-            mode = filestat[ST_MODE]
-            mtime = filestat[ST_MTIME]
-            uid = filestat[ST_UID]
-            gid = filestat[ST_GID]
-            if not os.path.isdir(file_name) and checksum_enabled:
-                sum_handle = open(file_name)
-                hash = self.__sumfile(sum_handle)
-                sum_handle.close()
-            else:
+            # ----- define how we collect metadata
+            def _determine_hash(file_name, filestat):
                 hash = "N/A"
+                if not os.path.isdir(file_name) and checksum_enabled:
+                    sum_handle = open(file_name)
+                    hash = self.__sumfile(sum_handle)
+                    sum_handle.close()
+                return hash
+
+            f_attr_names = [n for n in F_ATTR_NAMES if n not in ignore]
+            f_attr_functions = {
+                'mode' : lambda n, s : s[ST_MODE],
+                'mtime' : lambda n, s : s[ST_MTIME],
+                'uid' : lambda n, s : s[ST_UID],
+                'gid' : lambda n, s : s[ST_GID],
+                'md5sum' : _determine_hash,
+            }
+
+            # ----- collect the metadata
+            f_attrs = {}
+            filestat = os.stat(file_name)
+            for f_attr in f_attr_names:
+                f_attr_function = f_attr_functions[f_attr]
+                f_attrs[f_attr] = f_attr_function(file_name, filestat)
 
             # ------ what we return depends on flatten
             if flatten:
-                this_result = "%s:  mode=%s  mtime=%s  uid=%s  gid=%s  md5sum=%s\n" % (file_name,mode,mtime,uid,gid,hash)
+                attr_str = "  ".join(
+                    ["=".join([n, f_attrs[n]]) for n in f_attr_names])
+                this_result = "%s:  %s" % (file_name, attr_str)
             else:
-                this_result = [file_name,mode,mtime,uid,gid,hash]
+                this_result = [file_name] + [f_attrs[n] for n in f_attr_names]
 
             # ------ add on file data only if requested
             if scan_type != 0 and os.path.isfile(file_name):
@@ -291,6 +348,12 @@ class FileTracker(func_module.FuncModule):
                             'optional':True,
                             'default':0,
                             'description':"Track only files (not dirs or links)"
+                            },
+                        'ignore':{
+                            'type':'string',
+                            'optional':True,
+                            'default':'',
+                            'description':"Comma-separated list of file attributes to ignore",
                             }
                         },
                     'description':"Adds files to keep track of"
