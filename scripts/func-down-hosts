@@ -4,32 +4,33 @@
 
 import sys
 import func.overlord.client
-from optparse import OptionParser
-
-def parse_args(args):
-    parser = OptionParser(version = "1.0")
-    parser.add_option('--host', default=[], action='append',
-               help="hosts to act on, defaults to ALL")
-    parser.add_option('--timeout', default=10, type='int',
-               help='set the wait timeout for func commands')
-    parser.add_option('--forks', default=40, type='int',
-               help='set the number of forks to start up')
-    (opts, args) = parser.parse_args(args)
-
-    return opts, args, parser
+from func.overlord.scripts import base_func_parser, handle_base_func_options, errorprint
+from func.utils import is_error
 
 
-opts, args, parser = parse_args(sys.argv[1:])
-hosts ='*'
-if opts.host:
-    hosts = ';'.join(opts.host)
+def main(args):
+    parser = base_func_parser(outputpath=False, timeoutdef=10)
+    opts, args, parser = parse_args(args)
+    opts = handle_base_func_options(parser, opts)
 
-fc = func.overlord.client.Client(hosts, timeout=opts.timeout, nforks=opts.forks)
 
-results = fc.test.ping()
-offline = []
-for (hn, out) in results.items():
-    if out != 1:
-        offline.append(hn)
+    hosts ='*'
+    if opts.host:
+        hosts = ';'.join(opts.host)
 
-print '\n'.join(sorted(offline))
+    fc = func.overlord.client.Client(hosts, timeout=opts.timeout, nforks=opts.forks)
+
+    results = fc.test.ping()
+    offline = []
+    for (hn, out) in results.items():
+        if out != 1:
+            offline.append(hn)
+
+    print '\n'.join(sorted(offline))
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
+
+

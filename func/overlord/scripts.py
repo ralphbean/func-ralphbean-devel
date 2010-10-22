@@ -9,7 +9,7 @@ from optparse import OptionParser
 import sys
 
 
-def base_func_parser(opthosts=True, outputpath=True):
+def base_func_parser(opthosts=True, outputpath=True, forkdef=40, timeoutdef=300):
     parser = OptionParser()
     if opthosts:
         parser.add_option('--host', default=[], action='append',
@@ -17,9 +17,9 @@ def base_func_parser(opthosts=True, outputpath=True):
         parser.add_option('--hosts-from-file', default=None, dest="hostfile",
                    help="read list of hosts from this file, if '-' read from stdin")
 
-    parser.add_option('--timeout', default=300, type='int',
+    parser.add_option('--timeout', default=timeoutdef, type='int',
                help='set the wait timeout for func commands')
-    parser.add_option('--forks', default=40, type='int',
+    parser.add_option('--forks', default=forkdef, type='int',
                help='set the number of forks to start up')
     if outputpath:
         parser.add_option('--outputpath', default='/var/lib/func/data/', dest="outputpath",
@@ -43,3 +43,7 @@ def handle_base_func_options(parser, opts):
 
     return opts
 
+def errorprint(msg)
+    print >> sys.stderr, msg
+    
+    
