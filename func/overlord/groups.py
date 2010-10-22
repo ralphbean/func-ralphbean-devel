@@ -26,7 +26,7 @@ class Groups(object):
         else:
             # fallback/legacy only - won't work for puppet or other minion types
             self.get_hosts_for_spec = get_hosts_spec
-            
+
         self.backend = choose_backend(**kwargs)
 
 
@@ -41,22 +41,22 @@ class Groups(object):
             if hosts:
                 for h in hosts:
                     print "\t Host : %s "%h
-        
 
-            
+
+
 
     def __parse_strings(self, hoststring):
         """
         the host string maybe in 2 forms
         the first one is i it can be comma separated into the
-        configuration file the second one 
+        configuration file the second one
         is it can be ; separated and entered from
         commandline so should consider both situations
 
         @param hoststring : String to be parsed
         """
         hosts = []
-       
+
         if hoststring.find(';') != -1:
             bits = hoststring.split(';')
         elif hoststring.find(',') != -1:
@@ -70,7 +70,7 @@ class Groups(object):
 
         return list(set(bits))
 
-    
+
     def add_group(self,group_name,save=True):
         """
         Adding a new group
@@ -79,9 +79,9 @@ class Groups(object):
         @param save       : Save now or keep in memory and save later
         """
 
-        return self.backend.add_group(group_name,save) 
+        return self.backend.add_group(group_name,save)
 
-   
+
     def add_hosts_to_group_glob(self,group,hoststring,exclude_string=None):
         """
         With that method we will be able add lots of machines by single
@@ -105,11 +105,11 @@ class Groups(object):
     def add_hosts_to_group(self, group, hoststring):
         """
         Here you can add more than one hosts to a given group
-        
+
         @param group : Group name that will add the hosts
         @param hoststring : A string in form of "host1;host2" or comma
                             separated one (will be parsed) ...
-        
+
         """
         hosts = self.__parse_strings(hoststring)
         for host in hosts:
@@ -130,7 +130,7 @@ class Groups(object):
         """
         Similar as other add methods but accepts a list of hosts
         instead of some strings
-        
+
         @param group : Group name that will add the hosts
         @param host_list  : Host list
 
@@ -141,10 +141,10 @@ class Groups(object):
 
         for host in host_list:
             self.add_host_to_group(group, host)
-        
+
         self.save_changes()
-    
-    
+
+
     def get_groups(self,pattern=None,exact=True,exclude=None):
         """
         Get a list fo groups according to args
@@ -175,13 +175,13 @@ class Groups(object):
     def get_hosts(self,pattern=None,group=None,exact=True,exclude=None):
         """
         Getting the list of hosts according to args
-        
+
         @param pattern : A string to match name of the host
         @param exact   : When true pattern matching is exact
                         else it gets the ones that are related
         @param exclude : A list of excluded hosts useful in globbing
         """
-        
+
         return self.backend.get_hosts(pattern,group,exact,exclude)
 
     def get_group_names(self):
@@ -192,7 +192,7 @@ class Groups(object):
         """
         return self.get_groups()
 
-    
+
     def _get_host_list_from_glob(self,group_globs,include_host):
         """
         A private util method that is responsible for
@@ -211,7 +211,7 @@ class Groups(object):
             else:
                 for host_str in self.get_hosts(group=group_glob):
                     include_host = include_host.union(set(self.get_hosts_for_spec(host_str)))
-        
+
         return include_host
 
     def get_hosts_glob(self,host_string,exclude_string=None):
@@ -227,7 +227,7 @@ class Groups(object):
         group_globs = host_string.split(';')
         include_host = set()
         include_host = self._get_host_list_from_glob(group_globs,include_host)
-        
+
         #if you have a list to exclude
         if exclude_string:
             exclude_globs = exclude_string.split(';')
@@ -244,15 +244,15 @@ class Groups(object):
         use more advanced one get_hosts_glob() method
         """
         return self.get_hosts_glob(group_glob_str)
-          
+
     def remove_group(self,group,save=True):
         """
         Removing a group if needed
-        
+
         @param group : Group to be removed
         @param save  : Save now or keep in memory and save later
         """
-        
+
         return self.backend.remove_group(group,save)
 
     def remove_group_glob(self,group_str):
@@ -273,7 +273,7 @@ class Groups(object):
         if type(group_list) != list:
             sys.stderr.write("We accept only lists for for remove_group_list method")
             return False
-        
+
         for g in group_list:
             self.remove_group(g,save=False)
         self.save_changes()
@@ -284,8 +284,8 @@ class Groups(object):
         Removes a proper host from the conf file
         """
         return self.backend.remove_host(group_name,host,save)
-    
-    
+
+
     def remove_host_glob(self,group_name,host_str,exclude_string=None):
         copy_host_str = host_str
         host_str = self.get_hosts_for_spec(host_str)
@@ -294,11 +294,11 @@ class Groups(object):
             host_str = host_str.difference(e_s)
 
         #remove the list completely
-        if not host_str: #sometimes we may have some old entries into db so 
+        if not host_str: #sometimes we may have some old entries into db so
             #that will not make a match in that case
-            self.remove_host_list(group_name,[copy_host_str])    
+            self.remove_host_list(group_name,[copy_host_str])
         else:
-            self.remove_host_list(group_name,host_str)    
+            self.remove_host_list(group_name,host_str)
 
     def remove_host_list(self,group,host_list):
         """
@@ -321,7 +321,7 @@ class Groups(object):
         """
         self.backend.save_changes()
 
-    
+
 
 if __name__ == "__main__":
     pass

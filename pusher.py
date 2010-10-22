@@ -34,22 +34,22 @@ import glob
 import subprocess
 
 def run(cmd,failok=False):
-   """
-   Wrapper around subprocess
-   """
-   print "running: %s" % cmd
-   rc = subprocess.call(cmd, shell=True)
-   print "rc: %s" % rc
-   if not failok and not rc == 0:
-       croak("aborting")
+    """
+    Wrapper around subprocess
+    """
+    print "running: %s" % cmd
+    rc = subprocess.call(cmd, shell=True)
+    print "rc: %s" % rc
+    if not failok and not rc == 0:
+        croak("aborting")
 
 
 def croak(msg):
-   """
-   Print something and die.
-   """
-   print msg
-   sys.exit(1)
+    """
+    Print something and die.
+    """
+    print msg
+    sys.exit(1)
 
 
 # process options, as described at the top of this file
@@ -58,9 +58,9 @@ p.add_option("--cvs", dest="cvs", help="EX: ~/cvs/func")
 p.add_option("--proj", dest="proj", help="EX: /cg/func")
 (options,args) = p.parse_args()
 if options.cvs is None:
-   croak("--cvs is required, PEBKAC")
+    croak("--cvs is required, PEBKAC")
 if options.proj is None:
-   croak("--proj is required, PEBKAC")
+    croak("--proj is required, PEBKAC")
 
 cvsdir  = os.path.expanduser(options.cvs)
 projdir = os.path.expanduser(options.proj)
@@ -80,14 +80,14 @@ print " "
 # find the RPM build directory
 rpmbuild = os.path.join(projdir, "rpm-build")
 if not os.path.exists(rpmbuild):
-   croak("no directory: %s" % rpmbuild)
+    croak("no directory: %s" % rpmbuild)
 print "found rpm-build directory"
 
 # find the tarballs
 tarsearch = "%s/*.tar.gz" % rpmbuild
 tars = glob.glob(tarsearch)
 if len(tars) != 1:
-   croak("expected to find just one tar.gz in %s, no luck") % rpmbuild
+    croak("expected to find just one tar.gz in %s, no luck") % rpmbuild
 tarfile = tars[0]
 print "found tarball: %s" % tarfile
 
@@ -103,13 +103,13 @@ versionfile = None
 specsearch = "%s/*.spec" % projdir
 specs = glob.glob(specsearch)
 if len(specs) != 1:
-   croak("need one and only one specfile in %s" % projdir)
+    croak("need one and only one specfile in %s" % projdir)
 specfile = specs[0]
 print "found specfile: %s" % specfile
 
 # verify cvsdir exists
 if not os.path.exists(cvsdir):
-   croak("can't find cvs directory: %s" % cvsdir)
+    croak("can't find cvs directory: %s" % cvsdir)
 
 # store current directory
 topdir = os.getcwd()
@@ -144,5 +144,4 @@ for x in PROCESS_RELEASES:
 print "---------------------------------------------"
 print "all done, assuming you didn't see anything weird"
 print "don't forget to visit https://admin.fedoraproject.org/updates"
-print " "   
-
+print " "

@@ -33,7 +33,7 @@ class ListMinions(base_command.BaseCommand):
         if options.verbose:
             self.verbose = self.options.verbose
 
-    
+
     def do(self, args):
 
         self.server_spec = self.parentCommand.server_spec
@@ -43,4 +43,3 @@ class ListMinions(base_command.BaseCommand):
         servers.sort()
         for server in servers:
             print server
-

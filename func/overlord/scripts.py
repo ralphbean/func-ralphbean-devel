@@ -33,17 +33,16 @@ def handle_base_func_options(parser, opts):
             hosts = sys.stdin.readlines()
         else:
             hosts = open(opts.hostfile, 'r').readlines()
-        
+
         for hn in hosts:
             hn = hn.strip()
             if hn.startswith('#'):
                 continue
             hn = hn.replace('\n', '')
-            opts.host.append(hn)    
+            opts.host.append(hn)
 
     return opts
 
+
 def errorprint(msg)
     print >> sys.stderr, msg
-    
-    

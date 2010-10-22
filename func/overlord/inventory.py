@@ -31,9 +31,9 @@ DEFAULT_TREE = "/var/lib/func/inventory/"
 class FuncInventory(object):
 
     def __init__(self):
-        pass 
+        pass
 
-    def run(self,args): 
+    def run(self,args):
 
         p = FuncOptionParser(version=True)
         p.add_option("-v", "--verbose",
@@ -78,7 +78,7 @@ class FuncInventory(object):
 
         # see what modules each host provides (as well as what hosts we have)
         host_methods = func_client.Overlord(options.server_spec).system.list_methods()
-       
+
         # call all remote info methods and handle them
         if options.verbose:
             print "- scanning ..."
@@ -87,8 +87,8 @@ class FuncInventory(object):
         for (host, methods) in host_methods.iteritems():
 
             if utils.is_error(methods):
-                sys.stderr.write("-- connection refused: %s\n" % host) 
-                break 
+                sys.stderr.write("-- connection refused: %s\n" % host)
+                break
 
             for each_method in methods:
 
@@ -106,7 +106,7 @@ class FuncInventory(object):
 
                 if not "all" in filtered_function_list and not method_name in filtered_function_list:
                     continue
-               
+
                 overlord = func_client.Overlord(host,noglobs=True) # ,noglobs=True)
                 results = getattr(getattr(overlord,module_name),method_name)()
                 if self.options.verbose:
@@ -137,12 +137,12 @@ class FuncInventory(object):
 
         return pprint.pformat(data)
 
-    # FUTURE: skvidal points out that guest symlinking would be an interesting feature       
+    # FUTURE: skvidal points out that guest symlinking would be an interesting feature
 
     def save_results(self, options, host_name, module_name, method_name, results):
         dirname = os.path.join(options.tree, host_name, module_name)
         if not os.path.exists(dirname):
-             os.makedirs(dirname)
+            os.makedirs(dirname)
         filename = os.path.join(dirname, method_name)
         results_file = open(filename,"w+")
         data = self.format_return(results)
@@ -151,12 +151,12 @@ class FuncInventory(object):
 
     def git_setup(self,options):
         if options.nogit:
-            return  
+            return
         if not os.path.exists("/usr/bin/git"):
             sys.stderr.write("git-core is not installed, so no change tracking is available.\n")
             sys.stderr.write("use --no-git or, better, just install it.\n")
-            sys.exit(411) 
-            
+            sys.exit(411)
+
         if not os.path.exists(options.tree):
             os.makedirs(options.tree)
         dirname = os.path.join(options.tree, ".git")
@@ -177,7 +177,7 @@ class FuncInventory(object):
             return
         else:
             if options.verbose:
-               print "- updating git"
+                print "- updating git"
         mytime = time.asctime()
         cwd = os.getcwd()
         os.chdir(options.tree)

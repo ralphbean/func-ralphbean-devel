@@ -42,7 +42,7 @@ class Command(func_module.FuncModule):
 
         if os.access(command, os.X_OK):
             return True
-        return False    
+        return False
 
     def register_method_args(self):
         """

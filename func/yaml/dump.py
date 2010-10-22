@@ -164,7 +164,7 @@ class Dumper:
             self.output(line)
 
     def raiseToYamlSyntaxError(self):
-            raise """
+        raise """
 to_yaml should return tuple w/object to dump 
 and optional YAML type.  Example:
 ({'foo': 'bar'}, '!!foobar')
@@ -193,25 +193,25 @@ def accumulate(obj,occur):
         occur[obid] = occur[obid] + 1
 
 class YamlAnchors:
-     def __init__(self,data):
-         occur = {}
-         accumulate(data,occur)
-         anchorVisits = {}
-         for (obid, occur) in occur.items():
-             if occur > 1:
-                 anchorVisits[obid] = 0 
-         self._anchorVisits = anchorVisits
-         self._currentAliasIndex     = 0
-     def shouldAnchor(self,obj):
-         ret = self._anchorVisits.get(id(obj),None)
-         if 0 == ret:
-             self._currentAliasIndex = self._currentAliasIndex + 1
-             ret = self._currentAliasIndex
-             self._anchorVisits[id(obj)] = ret
-             return ret
-         return 0
-     def isAlias(self,obj):
-         return self._anchorVisits.get(id(obj),0)
+    def __init__(self,data):
+        occur = {}
+        accumulate(data,occur)
+        anchorVisits = {}
+        for (obid, occur) in occur.items():
+            if occur > 1:
+                anchorVisits[obid] = 0 
+        self._anchorVisits = anchorVisits
+        self._currentAliasIndex     = 0
+    def shouldAnchor(self,obj):
+        ret = self._anchorVisits.get(id(obj),None)
+        if 0 == ret:
+            self._currentAliasIndex = self._currentAliasIndex + 1
+            ret = self._currentAliasIndex
+            self._anchorVisits[id(obj)] = ret
+            return ret
+        return 0
+    def isAlias(self,obj):
+        return self._anchorVisits.get(id(obj),0)
 
 ### SORTING METHODS
 
@@ -295,7 +295,7 @@ def isUnicode(data):
     
 def sloppyIsUnicode(data):
         # XXX - hack to make tests pass for 2.1
-        return repr(data)[:2] == "u'" and repr(data) != data
+    return repr(data)[:2] == "u'" and repr(data) != data
 
 import sys
 if sys.hexversion < 0x20200000:

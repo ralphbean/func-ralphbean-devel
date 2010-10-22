@@ -32,7 +32,3 @@ if __name__ == '__main__':
     for key in data.keys():
         print "The value for %s is %s" % (key, data[key])
     print data
-
-
-
-

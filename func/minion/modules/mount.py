@@ -26,7 +26,7 @@ class MountModule(func_module.FuncModule):
     def list(self):
         cmd = sub_process.Popen(["/bin/cat", "/proc/mounts"], executable="/bin/cat", stdout=sub_process.PIPE, shell=False, close_fds=True)
         data = cmd.communicate()[0]
-        
+
         mounts = []
         lines = [l for l in data.split("\n") if l] #why must you append blank crap?
 
@@ -43,7 +43,7 @@ class MountModule(func_module.FuncModule):
 
     def mount(self, device, dir, type="auto", options=None, createdir=False):
         cmdline = ["/bin/mount", "-t", type]
-        if options: 
+        if options:
             cmdline.append("-o")
             cmdline.append(options)
         cmdline.append(device)
@@ -58,7 +58,7 @@ class MountModule(func_module.FuncModule):
             return True
         else:
             return False
-        
+
     def umount(self, dir, killall=False, force=False, lazy=False):
         # succeed if its not mounted
         if not os.path.ismount(dir):
@@ -84,14 +84,14 @@ class MountModule(func_module.FuncModule):
     def inventory(self, flatten=True):
         return self.list()
 
-    
+
     def grep(self,word):
         """
         Get some info about mounted devices
         """
         results = {self.list:[]}
         list_res = self.list()
-        
+
         if list_res:
             for list_dict in list_res:
                 for m_k,m_v in list_dict.iteritems():
@@ -99,8 +99,8 @@ class MountModule(func_module.FuncModule):
                         results[self.list].append({m_k:m_v})
         return results
     grep = func_module.findout(grep)
-                    
-        
+
+
 
     def register_method_args(self):
         """

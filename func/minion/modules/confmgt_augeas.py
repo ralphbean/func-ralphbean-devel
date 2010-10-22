@@ -12,7 +12,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import func_module
-from os import path as ospath,getenv as osgetenv 
+from os import path as ospath,getenv as osgetenv
 from time import strftime
 
 def lstripstr(the_string,the_prefix):
@@ -63,11 +63,11 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
         # yes, entryPath.rstrip('/')+'/' is really needed (i.e. entryPath=/)
         path=(hierarchy+entryPath.rstrip('/')+'/'+param).rstrip('/')
         try:
-            matchtest=aug.match(path) 
+            matchtest=aug.match(path)
         except Exception, e: return str(e)
         if matchtest:
             try:
-                pvalue=aug.get(path) 
+                pvalue=aug.get(path)
                 #aug.close()
             except Exception, e: return str(e)
         else:
@@ -154,7 +154,7 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
                     pvalue='(none)'
                 nodes.append([ospath.basename(match),pvalue])
         except Exception, e: return str(e)
-       
+
         #try:
         #    aug.close()
         #except Exception, e: return str(e)
@@ -165,7 +165,7 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
     # print is a reserved word so we use printconf instead
     def printconf(self,entryPath,hierarchy='/files'):
         """Print all tree children nodes from the path provided,
-with the help of Augeas, a configuration API (cf http://augeas.net)""" 
+with the help of Augeas, a configuration API (cf http://augeas.net)"""
         path=hierarchy+entryPath
         try:
             from augeas import Augeas
@@ -186,13 +186,13 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
         except Exception, e: return str(e)
 
         path=(hierarchy+entryPath.rstrip('/')+'/'+param).rstrip('/')
-        
+
         try:
             result=aug.remove(path)
             #aug.close()
         except Exception, e: return str(e)
         # Here is a little workaround for a bug in save for augeas.
-        # In the future this should not be necessary anymore. 
+        # In the future this should not be necessary anymore.
         try:
             aug.save()
         except:
@@ -205,7 +205,7 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
             msg = 'Invalid node'
         else:
             msg = repr(result)+' node(s) removed.'
-        return msg 
+        return msg
 
     def getenv(self,varname):
         """Get an environment variable."""
@@ -217,7 +217,7 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
     def backup(self,entryPath):
         """Backup a file with a timestamp. Cautious before applying modifications on a configuration file."""
         try:
-            import shutil 
+            import shutil
         except Exception, e: return str(e)
         backupPath=entryPath+'.'+strftime('%Y%m%d-%H%M')
         try:
@@ -227,8 +227,8 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
             else:
                 msg='Backup file '+backupPath+' already exists'
         except (OSError, IOError), e: return str(e)
-        return msg 
-    
+        return msg
+
 
     def register_method_args(self):
         """
@@ -389,4 +389,3 @@ with the help of Augeas, a configuration API (cf http://augeas.net)"""
                     'description':"Backup a file with a timestamp."
                     }
                 }
-

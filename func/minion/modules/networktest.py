@@ -29,12 +29,12 @@ class NetworkTest(func_module.FuncModule):
                                   self.__args_to_list(args))
 
     def traceroute(self, *args):
-         return self.__run_command('/bin/traceroute',
-                                   self.__args_to_list(args))
+        return self.__run_command('/bin/traceroute',
+                                  self.__args_to_list(args))
 
     def dig(self, *args):
-         return self.__run_command('/usr/bin/dig',
-                                   self.__args_to_list(args))
+        return self.__run_command('/usr/bin/dig',
+                                  self.__args_to_list(args))
 
     def isportopen(self, host, port):
         # FIXME: the return api here needs some work... -akl
@@ -57,7 +57,7 @@ class NetworkTest(func_module.FuncModule):
     def grep(self, word):
         """
         Grep some info from grep test
-        especially netstat is very suitable 
+        especially netstat is very suitable
         for that purpose ...
         """
         results = {
@@ -67,7 +67,7 @@ class NetworkTest(func_module.FuncModule):
         for res in netstat_result:
             if res.lower().find(word)!=-1:
                 results[self.netstat].append(res)
-        
+
         return results
     grep = func_module.findout(grep)
 

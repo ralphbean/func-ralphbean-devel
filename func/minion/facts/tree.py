@@ -116,4 +116,4 @@ class Node(object):
         """
         self.children = [self._new_instance(self.children, self.connector,
                 not self.negated)]
-        self.connector = self.default 
+        self.connector = self.default

@@ -9,13 +9,13 @@ class FactsModule(func_module.FuncModule):
     version = "0.0.1"
     api_version = "0.0.1"
     description = "Has some useful about Facts module"
-    
+
     def list_fact_modules(self):
         """
         List facts that are availible in that system
         """
         return minion_query.load_facts_modules().keys()
-    
+
     def list_fact_methods(self,abort_on_conflict=False):
         """
         List facts that are availible in that system
@@ -30,7 +30,7 @@ class FactsModule(func_module.FuncModule):
         """
         Show some info about fact module
         """
-        
+
         for name,module in minion_query.load_facts_modules().iteritems():
             if name == module_name:
                 return {
@@ -44,7 +44,7 @@ class FactsModule(func_module.FuncModule):
         """
         Display info about fact method
         """
-        
+
         for name,method in minion_query.load_fact_methods().iteritems():
             if name == method_name:
                 return {
@@ -55,13 +55,13 @@ class FactsModule(func_module.FuncModule):
 
     def call_fact(self,method_name):
         """
-        Sometimes we may need to get some of the facts live 
+        Sometimes we may need to get some of the facts live
         """
         for name,method in minion_query.load_fact_methods().iteritems():
             if name == method_name:
-                return method() 
+                return method()
         return {}
-    
+
     def grep(self, word):
         """
         Get some info about facts
@@ -70,20 +70,19 @@ class FactsModule(func_module.FuncModule):
                   self.list_fact_modules:[],
                   self.list_fact_methods:[]
                   }
-        
+
         #search in modules
         for m in self.list_fact_modules():
             if m.lower().find(word)!=-1:
                 result[self.list_fact_modules].append(m)
-                
+
         #search in methods
         for m in self.list_fact_methods():
             if m.lower().find(word)!=-1:
                 val = self.call_fact(m)
                 result[self.list_fact_methods].append("%s: %s" % (m,val))
-        
+
 
         #the final collected stuff here
         return result
     grep = func_module.findout(grep)
-        

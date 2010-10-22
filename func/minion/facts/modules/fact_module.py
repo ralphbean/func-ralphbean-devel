@@ -5,7 +5,7 @@ class BaseFactModule(object):
     """
     The base fact module  which is clever
     enough to register the facts it is kind
-    of FuncModule but registers modules with 
+    of FuncModule but registers modules with
     different convention and style .. Look
     into other modules to get the idea ...
     """
@@ -16,11 +16,11 @@ class BaseFactModule(object):
 
     def __init__(self):
         self.__init_log()
-    
+
     def __init_log(self):
         log = logger.Logger()
         self.logger = log.logger
-    
+
     def register_facts(self,fact_callers,module_name,abort_on_conflict=False):
         # a dictionary to catch the conflicts
         """
@@ -30,7 +30,7 @@ class BaseFactModule(object):
                                    So it maybe easy to get conflicts (having 2 facts)
                                    with tha same name so when that is True it will
                                    tell user that something is wrong. There is no need
-                                   to worry about the unittests will vcatch if sth bad 
+                                   to worry about the unittests will vcatch if sth bad
                                    happens ...
         """
         conflicts = {}
@@ -54,7 +54,6 @@ class BaseFactModule(object):
         #if there is conflict show it
         if abort_on_conflict:
             return conflicts
-                        
+
     def __is_public_valid_method(self,attr):
         return is_public_valid_method(self, attr, blacklist=['register_facts'])
-

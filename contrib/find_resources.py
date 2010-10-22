@@ -26,9 +26,9 @@ import func.utils as utils
 class FindResources(object):
 
     def __init__(self):
-        pass 
+        pass
 
-    def run(self,args): 
+    def run(self,args):
 
         p = optparse.OptionParser()
         p.add_option("-v", "--verbose",
@@ -60,8 +60,8 @@ class FindResources(object):
         host_freemem = func_client.Client(options.server_spec).virt.freemem()
         for (host, freemem) in host_freemem.iteritems():
             if utils.is_error(freemem):
-                print "-- connection refused: %s" % host 
-                continue 
+                print "-- connection refused: %s" % host
+                continue
 
             # Take an additional 256M off the freemem to keep
             # Domain-0 stable (shrinking it to 256M can cause

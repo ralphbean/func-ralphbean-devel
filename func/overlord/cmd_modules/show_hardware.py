@@ -30,11 +30,11 @@ class ShowHardware(base_command.BaseCommand):
     def addOptions(self):
         self.parser.add_option("-v", "--verbose", dest="verbose",
                                action="store_true")
-    
+
 
     def handleOptions(self, options):
         pass
-    
+
     def parse(self, argv):
         self.argv = argv
         return base_command.BaseCommand.parse(self,argv)
@@ -43,12 +43,12 @@ class ShowHardware(base_command.BaseCommand):
 
         self.server_spec = self.parentCommand.parentCommand.server_spec
         self.getOverlord()
-        
+
         results = self.overlord_obj.run("hardware", "info", [])
 
-        # if the user 
+        # if the user
         top_options = ["port","verbose"]
-        
+
         for minion in results:
             print "%s:" % minion
             minion_data = results[minion]
@@ -56,9 +56,7 @@ class ShowHardware(base_command.BaseCommand):
             if not args:
                 pprint.pprint(minion_data)
                 continue
-            
+
             for arg in args:
                 if arg in minion_data:
                     print minion_data[arg]
-
-

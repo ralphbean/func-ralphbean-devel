@@ -26,12 +26,12 @@ class xreverse:
     def __init__(self, file_object, buf_size=1024*8):
         self.fo = fo = file_object
         fo.seek(0, 2)        # go to the end of the file
-        self.pos = fo.tell() # where we are 
+        self.pos = fo.tell() # where we are
         self.buffer = ''     # data buffer
         self.lbuf = []       # buffer for parsed lines
         self.done = 0        # we've read the last line
         self.jump = -1 * buf_size
-        
+
         while 1:
             try:            fo.seek(self.jump, 1)
             except IOError: fo.seek(0)
@@ -78,7 +78,7 @@ class xreverse:
                         self.done = 1
                         return self.buffer + '\n'
 
-   
+
 
 class JobsModule(func_module.FuncModule):
 
@@ -93,13 +93,13 @@ class JobsModule(func_module.FuncModule):
         Wiki details on async invocation for more information.
         """
         return jobthing.job_status(job_id)
-    
+
     def tail_output(self,minion_job_id):
         """
         A tail method which will tail the log files
         that will track their output ....
         """
-        
+
         from func.minion import sub_process
         from certmaster.config import read_config
         from func.commonconfig import FuncdConfig
@@ -107,8 +107,8 @@ class JobsModule(func_module.FuncModule):
         import os
         import subprocess
 
-        
-        
+
+
         config = read_config(config_file, FuncdConfig)
         method_log_dir = config.method_log_dir
         method_log_file = os.path.join(method_log_dir,minion_job_id)
@@ -118,13 +118,13 @@ class JobsModule(func_module.FuncModule):
                 stderr=subprocess.PIPE,
                 shell = False,
                 )
-        
+
         return cmd.communicate()
 
-    
+
     def get_progress(self,minion_job_id):
         """
-        Get the log file and parse the progress part 
+        Get the log file and parse the progress part
         to be polled on overlord
         """
         from certmaster.config import read_config
@@ -136,7 +136,7 @@ class JobsModule(func_module.FuncModule):
         config = read_config(config_file, FuncdConfig)
         method_log_dir = config.method_log_dir
         method_log_file = os.path.join(method_log_dir,minion_job_id)
-        
+
         reco=re.compile("Progress report (\d+)/(\d+) completed")
         fo = file(method_log_file)
         for line in xreverse(fo):
@@ -148,4 +148,3 @@ class JobsModule(func_module.FuncModule):
 
         #that tells that we couldnt found any report there
         return(0,0)
-

@@ -15,7 +15,7 @@ class Test(func_module.FuncModule):
         bool_option = BoolOption(True)
         float_option = FloatOption(3.14159)
         testvalue = 'this is a test. It is only a test'
-        
+
 
     def add(self, numb1, numb2):
         return numb1 + numb2

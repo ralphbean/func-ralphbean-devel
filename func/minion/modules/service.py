@@ -25,7 +25,7 @@ class Service(func_module.FuncModule):
     description = "Allows for service control via func."
 
     def __command(self, service_name, command):
-    
+
         service_name = service_name.strip() # remove useless spaces
 
         filename = os.path.join("/etc/rc.d/init.d/",service_name)
@@ -60,16 +60,16 @@ class Service(func_module.FuncModule):
         Dig for some useful info in that module ...
         """
         final_dict = {self.get_running:[],
-                      self.get_enabled:[]      
+                      self.get_enabled:[]
                 }
         running = self.get_running()
         enabled = self.get_enabled()
-        
+
         #get enabled ones
         for e in enabled:
             if e[0].lower().find(word)!=-1:
                 final_dict[self.get_enabled].append(e)
-         
+
         #get running ones
         for e in running:
             if e[0].lower().find(word)!=-1:
@@ -77,7 +77,7 @@ class Service(func_module.FuncModule):
 
         return final_dict
     grep = func_module.findout(grep)
-        
+
 
 
 
@@ -132,7 +132,7 @@ class Service(func_module.FuncModule):
                 'get_enabled':{'args':{}},
                 'inventory':{'args':{}},
                 'status':{'args':{
-                    'service_name':service_name,   
+                    'service_name':service_name,
                     },
                     'description':'Getting the status of the service_name'
                     },

@@ -1,5 +1,5 @@
-#all the test cases which are 16 and handle 4 level 
-#list hash indentation are tested manually because 
+#all the test cases which are 16 and handle 4 level
+#list hash indentation are tested manually because
 #couldnt find a way to automate that process :)
 #zeros stands for dict type 1 id for lists
 
@@ -46,7 +46,7 @@ test_0001 = {
                         'result111':[1111,1111,1111]
                         }
                     },
-                
+
                 'result12':{
                     'result12':{
                         'result122':[1222,1222,1222]
@@ -422,8 +422,7 @@ def test_result_handler():
         result = produce_res_rec(test_case)
         #not a perfect one but it is just a poc
         #if sth is wrong can be seen here
-        #if someone wants to add more casess it is 
+        #if someone wants to add more casess it is
         #just enough to add them to the list
         #print result
         assert type(result) == list
-

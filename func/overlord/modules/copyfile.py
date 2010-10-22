@@ -21,11 +21,11 @@ class copyfile(overlord_module.BaseModule):
 
         self.parent.run("copyfile", "open", [remotepath, mode, uid, gid])
 
-        while True: 
+        while True:
             data=f.read(bufsize)
             if data:
                 self.parent.run("copyfile", "append", [remotepath, xmlrpclib.Binary(data)])
             else:
                 break
-    
+
         return True

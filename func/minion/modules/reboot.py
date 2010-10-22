@@ -43,4 +43,3 @@ class Reboot(func_module.FuncModule):
                     'description':"Rebooting the minions"
                     }
                 }
-

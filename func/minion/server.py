@@ -100,8 +100,8 @@ class XmlRpcInterface(object):
         methods = self.handlers.keys()
         methods.sort()
         return methods
-    
-    
+
+
     import func.minion.modules.func_module as fm
     def grep(self,word):
         """
@@ -111,9 +111,9 @@ class XmlRpcInterface(object):
         word = word.strip()
         modules = self.modules.keys()
         methods = self.handlers.keys()
-        
+
         return_dict = {}
-        
+
         #find modules
         for m in modules:
             if m.find(word)!=-1:
@@ -138,7 +138,7 @@ class XmlRpcInterface(object):
         for module in self.modules.keys():
             inventory[module] = []
         for method in self.handlers.keys():
-            # string match, ick. 
+            # string match, ick.
             method_bits = method.split('.')
             method_module = string.join(method_bits[:-1], '.')
             method_name = method_bits[-1]
@@ -237,21 +237,21 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
     def __init__(self, args):
         self.allow_reuse_address = True
         self.modules = module_loader.load_modules()
-        
+
         #load facts methods
         self.fact_methods = load_fact_methods()
-        self.minion_query = FactsMinion(method_fact_list=self.fact_methods) 
+        self.minion_query = FactsMinion(method_fact_list=self.fact_methods)
 
         XmlRpcInterface.__init__(self)
         hn = func_utils.get_hostname_by_route()
-        
+
         if self.config.key_file != '':
             self.key = self.config.key_file
         else:
             # search case-insensitively to find the right key - take the first one - if there are
             # more than one differing only by case then the user is going to get 'unique' behavior :)
             self.key = func_utils.find_files_by_hostname(hn, self.cm_config.cert_dir, '.pem')[0]
-        
+
         if self.config.cert_file != '':
             self.cert = self.config.cert_file
         else:
@@ -261,11 +261,11 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
             self.ca = self.config.ca_file
         else:
             self.ca = "%s/ca.cert" % self.cm_config.cert_dir
-        
-        
+
+
         self._our_ca = certs.retrieve_cert_from_file(self.ca)
         self.acls = acls_mod.Acls(config=self.config)
-        
+
         AuthedXMLRPCServer.AuthedSSLXMLRPCServer.__init__(self, args,
                                                           self.key, self.cert,
                                                           self.ca)
@@ -278,14 +278,14 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
         """
         # take _this_request and hand it off to check out the acls of the method
         # being called vs the requesting host
-        
+
         if not hasattr(self, '_this_request'):
             raise codes.InvalidMethodException
-            
+
         r,a = self._this_request
         peer_cert = r.get_peer_certificate()
         ip = a[0]
-        
+
 
         # generally calling conventions are:  hardware.info
         # async convention is async.hardware.info
@@ -298,7 +298,7 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
 
         if not self.acls.check(self._our_ca, peer_cert, ip, method, params):
             raise codes.AccessToMethodDenied
-            
+
         # Recognize ipython's tab completion calls
         if method == 'trait_names' or method == '_getAttributeNames':
             return self.handlers.keys()
@@ -309,9 +309,9 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
 
         try:
             if not async_dispatch:
-                #check if we send some queries 
+                #check if we send some queries
                 if len(params)>0 and type(params[0]) == dict and params[0].has_key('__fact__'):
-                   fact_result = self.minion_query.exec_query(params[0]['__fact__'],True)
+                    fact_result = self.minion_query.exec_query(params[0]['__fact__'],True)
                 else:
                     return self.get_dispatch_method(method)(*params)
 
@@ -330,7 +330,7 @@ class FuncSSLXMLRPCServer(AuthedXMLRPCServer.AuthedSSLXMLRPCServer,
     def auth_cb(self, request, client_address):
         peer_cert = request.get_peer_certificate()
         return peer_cert.get_subject().CN
-    
+
 
 def excepthook(exctype, value, tracebackobj):
     exctype_blurb = "Exception occured: %s" % exctype
@@ -341,7 +341,7 @@ def excepthook(exctype, value, tracebackobj):
     print excvalue_blurb
     print exctb_blurb
 
-    log = logger.Logger().logger 
+    log = logger.Logger().logger
     log.info(exctype_blurb)
     log.info(excvalue_blurb)
     log.info(exctb_blurb)

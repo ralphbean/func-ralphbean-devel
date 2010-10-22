@@ -18,7 +18,7 @@ cherrypy.lowercase_api = True
 class ConfigurationError(Exception):
     pass
 
-#that variable will help us to see when we are in PRODUCTION 
+#that variable will help us to see when we are in PRODUCTION
 PRODUCTION_ENV = False
 
 def start():
@@ -38,7 +38,7 @@ def start():
         #we work with production settings now !
         PRODUCTION_ENV = True
         configfile = "/etc/funcweb/prod.cfg"
-    
+
     elif len(sys.argv) > 1:
         configfile = sys.argv[1]
     elif exists(join(setupdir, "setup.py")):
@@ -57,7 +57,7 @@ def start():
         modulename="funcweb.config")
 
     from funcweb.controllers import Root
-    
+
     if PRODUCTION_ENV:
         utils.daemonize("/var/run/funcwebd.pid")
     #then start the server
@@ -65,4 +65,4 @@ def start():
         turbogears.start_server(Root())
     except Exception,e:
         print "Debug information from cherrypy server ...: ",e
-        #sys.exit(1)    
+        #sys.exit(1)

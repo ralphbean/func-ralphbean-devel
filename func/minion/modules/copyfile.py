@@ -38,7 +38,7 @@ class CopyFile(func_module.FuncModule):
         thissum = hashlib.new('sha1')
         thissum.update(blob)
         return thissum.hexdigest()
-                       
+
     def checksum(self, thing):
 
         CHUNK=2**16

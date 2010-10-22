@@ -110,7 +110,7 @@ class Vlan(func_module.FuncModule):
             exitcode = os.spawnv(os.P_WAIT, self.options.vconfig, [ self.options.vconfig, "add", interface, str(vlanid)] )
         else:
             exitcode = -1
-        
+
         return exitcode
 
     def add_permanent(self, interface, vlanid, ipaddr=None, netmask=None, gateway=None):
@@ -160,7 +160,7 @@ class Vlan(func_module.FuncModule):
     def delete(self, interface, vlanid):
         """
         Deletes a vlan from an interface.
-        
+
         Keyword arguments:
         interface -- Interface to delete vlan from (string, example: "eth0")
         vlanid -- Vlan ID to remove (string, example: "1100")
@@ -276,7 +276,7 @@ class Vlan(func_module.FuncModule):
 
         # Todo: Compare the current configuration to the supplied configuration
         return self.list()
-    
+
     def write(self):
         """
         Permantly applies configuration obtained through the list() method to the system.
@@ -301,7 +301,7 @@ class Vlan(func_module.FuncModule):
             if interface not in currentconfig:
                 for vlan in vlans:
                     self.add_permanent(interface, vlan)
-            
+
             else:
                 for vlan in vlans:
                     if vlan not in currentconfig[interface]:

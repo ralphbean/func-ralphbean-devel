@@ -19,7 +19,7 @@
 
 import func_module
 from codes import FuncException
-    
+
 # XXX Use internal yum callback or write a useful one.
 class DummyCallback(object):
 
@@ -32,7 +32,7 @@ def _makeresults(tsInfo):
         # FIXME obviously much more should happen here :)
         if pkg.ts_state:
             results += '%s\n' % pkg
-    
+
     return results
 
 def _singleAction(action, items=[], config_dict={}, **kwargs):
@@ -50,10 +50,10 @@ def _singleAction(action, items=[], config_dict={}, **kwargs):
             pkglist = items.split(' ')
         else:
             pkglist = []
-    
+
     if len(pkglist) == 0 and action not in ('update', 'upgrade'):
         raise FuncException("%s requires at least one pkg" % action)
-    
+
     results = 'command: %s %s\n' % (action, ' '.join(pkglist))
     try:
         ayum.doLock()
@@ -67,7 +67,7 @@ def _singleAction(action, items=[], config_dict={}, **kwargs):
 
                 elif action in ('update', 'upgrade'):
                     tx_mbrs = ayum.update(pattern=p)
-                
+
                 if not tx_mbrs:
                     results += "No %s matched for %s\n" % (action, p)
 
@@ -82,7 +82,7 @@ def _singleAction(action, items=[], config_dict={}, **kwargs):
         ayum.closeRpmDB()
         ayum.doUnlock()
     return results
-    
+
 class Yum(func_module.FuncModule):
 
     version = "0.0.1"
@@ -98,7 +98,7 @@ class Yum(func_module.FuncModule):
             versionlist = ayum.rpmdb.simpleVersion(main_only=True)
             version = versionlist[0]
             return versionlist
-    
+
     def update(self, pkg=None, config_dict={}):
         return _singleAction('update', items=pkg, config_dict=config_dict)
 
@@ -107,7 +107,7 @@ class Yum(func_module.FuncModule):
 
     def remove(self, pkg=None, config_dict={}):
         return _singleAction('remove', items=pkg, config_dict=config_dict)
-    
+
     #def multiple(self, cmdlist=[]):
     #    """take multiple commands as a single transaction - equiv of yum shell"""
     #    raise FuncException("Not Implemented Yet!"
@@ -127,9 +127,9 @@ class Yum(func_module.FuncModule):
                 thislist = getattr(obj, pkgtype)
                 output_list = sorted(map(str, thislist))
                 resultsdict[pkgtype] = output_list
-        
+
         return resultsdict
-        
+
     def check_update(self, filter=[], repo=None):
         """Returns a list of packages due to be updated
            You can specify a filter using the standard yum wildcards
@@ -156,7 +156,7 @@ class Yum(func_module.FuncModule):
             pkg_list = exactmatch + matched
 
         return map(str, pkg_list)
-    
+
     def grep(self, word):
         """
         Grep info from module
@@ -164,10 +164,10 @@ class Yum(func_module.FuncModule):
         results = {self.check_update:[]}
         update_res = self.check_update()
         results[self.check_update].extend([res for res in update_res if res.lower().find(word)!=-1])
-        
+
         return results
     grep = func_module.findout(grep)
-    
+
     def register_method_args(self):
         """
         Implementing the argument getter

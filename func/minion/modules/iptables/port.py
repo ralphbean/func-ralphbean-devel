@@ -31,7 +31,7 @@ class Port(func_module.FuncModule):
          * Drop all incoming traffic to local TCP port 80:
            > func '*' call iptables.port drop_from 80
          * Drop all incomming traffic to local UDP port 53 from 192.168.0.0/24:
-           > func '*' call iptables.port drop_from 80 192.168.0.0/24 udp 
+           > func '*' call iptables.port drop_from 80 192.168.0.0/24 udp
         """
         dir=parse_dir(dir)
         clear_all("-D INPUT -p %s --%sport %s -s %s -j ACCEPT" % (prot, dir, port, ip) )
@@ -49,7 +49,7 @@ class Port(func_module.FuncModule):
          * Reject all incoming traffic to local TCP port 80:
            > func '*' call iptables.port reject_from 80
          * Reject incomming traffic to local UDP port 53 from 192.168.0.0/24:
-           > func '*' call iptables.port reject_from 80 192.168.0.0/24 udp 
+           > func '*' call iptables.port reject_from 80 192.168.0.0/24 udp
         """
         dir=parse_dir(dir)
         clear_all("-D INPUT -p %s --%sport %s -s %s -j ACCEPT" % (prot, dir, port, ip) )
@@ -67,7 +67,7 @@ class Port(func_module.FuncModule):
          * Accept all incoming traffic to local TCP port 80:
            > func '*' call iptables.port accept_from 80
          * Accept incomming traffic to local UDP port 53 from 192.168.0.0/24:
-           > func '*' call iptables.port accept_from 80 192.168.0.0/24 udp 
+           > func '*' call iptables.port accept_from 80 192.168.0.0/24 udp
         """
         dir=parse_dir(dir)
         clear_all("-D INPUT -p %s --%sport %s -s %s -j DROP" % (prot, dir, port, ip) )
@@ -171,7 +171,7 @@ class Port(func_module.FuncModule):
                         'prot':prot,
                         'dir':dir,
                         'port':port
-                        
+
                         }
                     },
                 'accept_from':{'args':
@@ -180,7 +180,7 @@ class Port(func_module.FuncModule):
                         'prot':prot,
                         'dir':dir,
                         'port':port
-                        
+
                         }
                     },
                 'drop_to':{'args':
@@ -189,7 +189,7 @@ class Port(func_module.FuncModule):
                         'prot':prot,
                         'dir':dir,
                         'port':port
-                        
+
                         }
                     },
                  'reject_to':{'args':
@@ -198,7 +198,7 @@ class Port(func_module.FuncModule):
                         'prot':prot,
                         'dir':dir,
                         'port':port
-                        
+
                         }
                     },
                   'accept_to':{'args':
@@ -207,10 +207,10 @@ class Port(func_module.FuncModule):
                         'prot':prot,
                         'dir':dir,
                         'port':port
-                        
+
                         }
                     },
-               
+
                 }
 
 def parse_dir(dir):

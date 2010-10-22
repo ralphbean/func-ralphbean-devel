@@ -27,11 +27,11 @@ class FuncCommandLine(command.Command):
     subCommandClasses = []
     exclude_spec = None
     conffile = None
-    
+
     def __init__(self):
         modules = module_loader.load_modules('func/overlord/cmd_modules/', base_command.BaseCommand)
         for x in modules.keys():
-           self.subCommandClasses.append(modules[x].__class__)
+            self.subCommandClasses.append(modules[x].__class__)
         command.Command.__init__(self, parentCommand=FuncCommandLine)
 
     def do(self, args):
@@ -44,7 +44,7 @@ class FuncCommandLine(command.Command):
                                help="exclude some of minions",
                                action="store",
                                type="string")
-        self.parser.add_option('-c', '--conf', dest="conffile", 
+        self.parser.add_option('-c', '--conf', dest="conffile",
                                help="specify an overlord.conf file for func to use")
 
     # just some ugly goo to try to guess if arg[1] is hostnamegoo or
@@ -53,7 +53,7 @@ class FuncCommandLine(command.Command):
         if str.find("*") or str.find("?") or str.find("[") or str.find("]"):
             return True
         return False
-        
+
     def handleArguments(self, args):
         if len(args) < 2:
             sys.stderr.write("see the func manpage for usage\n")
@@ -77,4 +77,3 @@ class FuncCommandLine(command.Command):
 
         if options.conffile:
             self.conffile = options.conffile
-            

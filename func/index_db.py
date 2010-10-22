@@ -73,10 +73,10 @@ class IndexDb(object):
             print e
             self.__storage = None
             return None
-        
+
         self.__close_storage()
         return tmp
-        
+
 
     def delete_from_index(self,delete_list):
         """
@@ -85,7 +85,7 @@ class IndexDb(object):
         self.__mode = self.WRITE_MODE
         if not self.__storage:
             self.__load_index()
-            
+
         try:
             for to_delete in delete_list:
                 if self.__storage.has_key(to_delete):
@@ -94,7 +94,7 @@ class IndexDb(object):
             print e
             self.__storage = None
             return False
-        
+
         self.__close_storage()
         return True
 
@@ -124,7 +124,7 @@ def write_index_data(data,dir=None):
     A simple setter method for above structure
     """
     db = IndexDb(dir)
-    result = db.write_to_index(data) 
+    result = db.write_to_index(data)
     return result
 
 def delete_index_data(data,dir=None):
@@ -137,11 +137,10 @@ def delete_index_data(data,dir=None):
 
 def key_exists(key,dir=None):
     """
-    Checks for a key if is there 
+    Checks for a key if is there
     """
     dict = get_index_data(dir)
     return dict.has_key(key)
 
 if __name__ == "__main__":
     pass
-

@@ -10,7 +10,7 @@ class BaseBackend(object):
         """
         raise NotImplementedError
 
-   
+
     def add_group(self,group,save=True):
         """
         Adds a group
@@ -29,7 +29,7 @@ class BaseBackend(object):
         """
         raise NotImplementedError
 
-        
+
     def save_changes(self):
         """
         Push the stuff that is in memory
@@ -48,7 +48,7 @@ class BaseBackend(object):
         Get a set of groups
         """
         raise NotImplementedError
-    
+
 from func.commonconfig import OVERLORD_CONFIG_FILE,OverlordConfig
 from certmaster.config import read_config
 CONF_FILE = OVERLORD_CONFIG_FILE

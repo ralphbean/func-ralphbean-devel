@@ -14,7 +14,7 @@ __all__ = ['authenticate']
 from ctypes import CDLL, POINTER, Structure, CFUNCTYPE, cast, pointer, sizeof
 from ctypes import c_void_p, c_uint, c_char_p, c_char, c_int
 
-#funcweb specific part 
+#funcweb specific part
 from funcweb.commands import PRODUCTION_ENV
 
 LIBPAM = CDLL("libpam.so.0")

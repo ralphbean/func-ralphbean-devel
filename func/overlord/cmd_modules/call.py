@@ -42,9 +42,9 @@ class FactsCommand(object):
                         "=":"",
                         "<":"lt",
                         ">":"gt",
-                        } 
+                        }
     __valid_c_operators={
-            
+
                         "<=":"lte",
                         ">=":"gte"
                         }
@@ -62,7 +62,7 @@ class FactsCommand(object):
             return False
         elif filter and filteror:
             return False
-        
+
         tmp_arg = filter or filteror
         parse_result = self.__parse_fact_args(tmp_arg)
         if not parse_result:
@@ -72,13 +72,13 @@ class FactsCommand(object):
 
     def __parse_fact_args(self,args):
         """
-        Parses the format of the arguments which is like 
+        Parses the format of the arguments which is like
         keyword=value,keyword<value,value in keyword
         """
         comma_separated = args.split(",")
         if not self.__is_coma_ok(comma_separated):
             return False
-        
+
         final_dict = {}
 
         for com_key in comma_separated:
@@ -88,7 +88,7 @@ class FactsCommand(object):
                 return False
 
             final_dict[res[0]]=res[1]
-        
+
         return final_dict
 
 
@@ -101,31 +101,31 @@ class FactsCommand(object):
                 #self.outputUsage()
                 return False
         return True
-    
+
     def __convert_keyword(self,keyword):
         """
         Convert keyword to a ready to use Overlord parameter
         """
         keyword = keyword.strip()
-        
+
         #check for space first
         if keyword.find(" ")!=-1:
             #do the keyword operations first
             tmp_kw = keyword.split()
             return self.__join_keyword(tmp_kw,self.__valid_keywords)
-           
+
         else:
             for op in self.__valid_c_operators:
                 if keyword.find(op)!=-1:
                     tmp_kw = keyword.split(op)
-                    return self.__join_keyword(tmp_kw,self.__valid_c_operators,op) 
+                    return self.__join_keyword(tmp_kw,self.__valid_c_operators,op)
             #do the operator things
             for op in self.__valid_operators:
                 if keyword.find(op)!=-1:
                     tmp_kw = keyword.split(op)
-                    return self.__join_keyword(tmp_kw,self.__valid_operators,op) 
+                    return self.__join_keyword(tmp_kw,self.__valid_operators,op)
         return False
-    
+
     def __join_keyword(self,tmp_kw,valid_set,operator=None):
         """
         A common util operation we do
@@ -142,12 +142,12 @@ class FactsCommand(object):
                 return False
             else:
                 value = tmp_kw[1]
-        
+
 
         #doing that trick to not to loose some of the oprators when showing
         if not operator.strip() in valid_set.keys():
-                return False
-        
+            return False
+
         if operator in self.__valid_keywords.keys():
             return "".join([value.strip(),"__",valid_set[operator.strip()]]),tmp_kw[0].strip()
         else:
@@ -203,7 +203,7 @@ class Call(base_command.BaseCommand):
         self.parser.add_option('-o', '--logone', dest="logone",
                                help="Polls for that call for minion side to get some useful output info,for only one host,must suply job_id;host as parameter",
                                action="store")
-        
+
         self.parser.add_option('-r', '--progress', dest="progress",
                                help="Polls for that call for minion side to get the progress.",
                                action="store")
@@ -213,7 +213,7 @@ class Call(base_command.BaseCommand):
         self.parser.add_option("", "--filteror", dest="filteror",
                                help="use filteror to or minion facts",
                                 action="store")
-        
+
     def handleOptions(self, options):
         self.options = options
         self.verbose = options.verbose
@@ -225,13 +225,13 @@ class Call(base_command.BaseCommand):
         self.argv = argv
 
         return base_command.BaseCommand.parse(self, argv)
-        
+
 
     def format_return(self, data):
         """
         The call module supports multiple output return types, the default is pprint.
         """
-        
+
         if self.options.xmlrpc:
             return xmlrpclib.dumps((data,""))
 
@@ -267,7 +267,7 @@ class Call(base_command.BaseCommand):
         if not args:
             self.outputUsage()
             return
-        
+
         self.module           = args[0]
         if len(args) > 1:
             self.method       = args[1]
@@ -292,13 +292,13 @@ class Call(base_command.BaseCommand):
         self.async = self.options.async
         self.forks = self.options.forks
         self.delegate = self.options.delegate
-        
+
         self.server_spec = self.parentCommand.server_spec
         #do we have exclude option activated ?
         self.exclude_spec = self.parentCommand.exclude_spec
-        
+
         self.getOverlord()
-        
+
         #the facts part inserted here
         if self.options.filter or self.options.filteror:
             facts = FactsCommand()
@@ -306,13 +306,13 @@ class Call(base_command.BaseCommand):
             if not result_fact:
                 self.outputUsage()
                 return
-        
+
         if self.options.filter:
             #print "The result facts are : ",result_fact
             self.overlord_obj=self.overlord_obj.filter(**result_fact)
         elif self.options.filteror:
             self.overlord_obj=self.overlord_obj.filter_or(**result_fact)
-        
+
 
         #end of the facts parsing
 
@@ -328,11 +328,11 @@ class Call(base_command.BaseCommand):
             return async_results
 
         #log for only one machine which is more reasonable instead
-        #of doing it for thousands ... 
+        #of doing it for thousands ...
         if self.options.logone:
             self._poll_logs(self.module,self.options.logone)
             return #terminate no need for more
-        
+
         if self.options.progress:
             self._print_progress(self.module,self.options.progress)
             return #terminate no need for more
@@ -366,7 +366,7 @@ class Call(base_command.BaseCommand):
         """
         import time
         from func.minion.modules.jobs import NUM_OF_LINES
-        #a constant that will tell us from how many same 
+        #a constant that will tell us from how many same
         # logs we will accept that the rest of logs is the
         #same we should stop somewhere !
         print_result = {}
@@ -378,13 +378,13 @@ class Call(base_command.BaseCommand):
                 poll_res = self.overlord_obj.tail_log(job_id,host,True)
             else:
                 poll_res = self.overlord_obj.tail_log(job_id,host)
-                
+
             if not poll_res[0]:
                 print "Logging data is initializing ..."
                 time.sleep(0.5)
                 poll_res = self.overlord_obj.tail_log(job_id,host)
                 continue
-            
+
             #print the stuff you collected
             for minion,log in poll_res[0].iteritems():
                 log = self._convert_log_to_list(log)
@@ -397,46 +397,46 @@ class Call(base_command.BaseCommand):
                     #print "---------------------------------------------"
                     #print "PRINT_RESULT :  ",print_result[minion]
                     #print "LOG IS ",log
-                    
+
                     to_print[minion]=list(set(log).difference(set(print_result[minion])))
                     print_result[minion]=list(set(print_result[minion]).union(set(to_print[minion])))
                     #should empty the buffer a little bit
                     #think if you have a file which is 1 GB :)
                     #print_result[minion] = print_result[minion][-NUM_OF_LINES:]
                     #print "PRINT_RESULT :  ",print_result[minion]
-                    
+
                     #print "to_print ",to_print
                     #print "---------------------------------------------"
                     #raw_input()
-                    
+
             self._print_dict_result(to_print,print_first_time)
             if print_first_time and host:
                 print_first_time = False
-                
+
             time.sleep(0.5)
-    
+
     def _print_progress(self,job_id,host):
         """
         Gets the progress for job_id and host
         """
         import time
-        from func.utils import ProgressBar,TerminalController 
-        
+        from func.utils import ProgressBar,TerminalController
+
         poll_res = (None,False)#initial state
         first_time = True
         while not poll_res[1]:#while the job_id is not finished
             poll_res = self.overlord_obj.check_progress(job_id,host)
-            #print poll_res    
+            #print poll_res
             if not poll_res[0]:
                 time.sleep(0.5)
                 continue
-            
+
             if first_time:
-                
+
                 term = TerminalController()
                 progress = ProgressBar(term, 'Progress Status',minValue=poll_res[0][host][0],maxValue=poll_res[0][host][1])
                 first_time = False
-            
+
             #update the progress bar
             progress.update(poll_res[0][host][0])
             #sleep a little bit
@@ -448,11 +448,11 @@ class Call(base_command.BaseCommand):
             #clear the progress bar and say it is done
             progress.clear()
             print "JOB FINISHED : ",job_id
-    
+
 
     def _print_dict_result(self,result,print_host=True):
         """
-        An util method that just prints info 
+        An util method that just prints info
         in a result dictionary ...
         """
         for minion,logs in result.iteritems():
@@ -460,7 +460,7 @@ class Call(base_command.BaseCommand):
                 if print_host:
                     print "------HOST : %s -------"%minion
                 print "\n".join(logs)
-        
+
 
     def _convert_log_to_list(self,log):
         res = []

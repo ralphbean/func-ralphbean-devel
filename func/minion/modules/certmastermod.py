@@ -33,7 +33,7 @@ class CertMasterModule(func_module.FuncModule):
         """
         cm = certmaster.CertMaster()
         return cm.get_csrs_waiting()
-        
+
     def get_signed_certs(self):
         """
         Returns a list of all signed certs on this minion
@@ -48,7 +48,7 @@ class CertMasterModule(func_module.FuncModule):
         list_of_hosts = self.__listify(list_of_hosts)
         cm = certmaster.CertMaster()
         for x in list_of_hosts:
-           cm.sign_this_csr(x)
+            cm.sign_this_csr(x)
         return True
 
     def cleanup_hosts(self, list_of_hosts):
@@ -58,7 +58,7 @@ class CertMasterModule(func_module.FuncModule):
         list_of_hosts = self.__listify(list_of_hosts)
         cm = certmaster.CertMaster()
         for x in list_of_hosts:
-           cm.remove_this_cert(x)
+            cm.remove_this_cert(x)
         return True
 
     def peering_enabled(self):
@@ -121,7 +121,7 @@ class CertMasterModule(func_module.FuncModule):
 
     def register_method_args(self):
         """
-        Export certmaster module 
+        Export certmaster module
         """
 
         list_of_hosts = {

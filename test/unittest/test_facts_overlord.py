@@ -1,31 +1,31 @@
 from func.minion.facts.overlord_query import OverlordQuery
 from func.minion.facts.query_utils import Q
-from func.minion.facts.query import FuncLogicQuery 
+from func.minion.facts.query import FuncLogicQuery
 import func.overlord.client as fc
 import socket
 
 class TestOverlordQueryProxy(object):
-    
+
     # assume we are talking to localhost
     #th = "localhost.localdomain"
     th = socket.getfqdn()
     nforks=1
     async=False
 
-   
+
     def __init__(self):
 
         self.query = FuncLogicQuery(
                 Q(a=True,b=True)|
                 Q(c=True,b=False)
                 )
-        
-       
+
+
         self.negated_q = FuncLogicQuery(
                 (~Q(a=True,b=True)| Q(c=True,b=False))&
                 Q(e=True,f=False)
                 )
-        
+
         self.negated_q2 = FuncLogicQuery(
                 ~Q(a=True,b=True)| Q(c=True,b=False)
                 )
@@ -48,21 +48,21 @@ class TestOverlordQueryProxy(object):
         """
         self.tmp_proxy = OverlordQuery(fact_query=self.query)
         self.tmp_proxy.serialize_query()
-        
+
         self.tmp_proxy = OverlordQuery(fact_query=self.negated_q)
         self.tmp_proxy.serialize_query()
-    
+
         self.tmp_proxy = OverlordQuery(fact_query=self.negated_q2)
         self.tmp_proxy.serialize_query()
-    
+
 
 
     def test_chain_send(self):
-        query = Q(runlevel__lt=6,runlevel__gt=2) 
+        query = Q(runlevel__lt=6,runlevel__gt=2)
         print self.overlord.set_complexq(query).hardware.info()
 
     def test_async_chain_send(self):
-        query = Q(runlevel__lt=6,runlevel__gt=2) 
+        query = Q(runlevel__lt=6,runlevel__gt=2)
         res = self.async_overlord.set_complexq(query).hardware.info()
         print res
         import time
@@ -79,7 +79,7 @@ class TestFactModule(object):
 
     only_int_keywords = ["","gt","gte","lt","lte"]
     rest_keywords = ['contains','icontains','iexact','startswith']
-    
+
     def __init__(self):
         self.overlord = fc.Overlord(self.th,
                                     nforks=self.nforks,
@@ -95,7 +95,7 @@ class TestFactModule(object):
         self.overlord_query = fc.Overlord(self.th,
                                     nforks=self.nforks,
                                     async=self.async)
-    
+
 
     def test_fact_module(self):
 
@@ -132,7 +132,7 @@ class TestFactModule(object):
             #active_res =  self.overlord_query.display_active(result,with_facts=True)
             #assert active_res[self.th][0]['__fact__'][0] == True
 
-    
+
     def __make_it_less_or_greater(self,value,type_cmp):
         if type_cmp == "lt":
             if type(value) == int:
@@ -144,8 +144,8 @@ class TestFactModule(object):
                 return value-1
             elif type(value)==str:
                 return value[:len(value)-1]
-    
+
     def assert_on_fault(self, result):
-        
+
         import func.utils
         assert func.utils.is_error(result[self.th]) == False

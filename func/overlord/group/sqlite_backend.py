@@ -12,13 +12,13 @@ class Group(Base):
     Group Table
     """
     __tablename__ = 'groups'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100),nullable=False,unique=True)
-    
+
     def __init__(self,name):
         self.name = name
-        
+
     def __repr__(self):
         return "<Group('%s')>" % (self.name)
 
@@ -28,17 +28,17 @@ class Host(Base):
     """
 
     __tablename__ = 'hosts'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False,unique=True)
     group_id = Column(Integer, ForeignKey('groups.id'))
-    
+
     group = relation(Group, backref=backref('hosts', order_by=id))
-    
+
     def __init__(self, name,group_id):
         self.name = name
         self.group_id = group_id
-    
+
     def __repr__(self):
         return "<Host('%s')>" % self.name
 
@@ -81,7 +81,7 @@ class SqliteBackend(BaseBackend):
         Session = scoped_session(sessionmaker(bind=engine))
         self.session = Session()
 
-    
+
     def add_group(self,group,save=True):
         """
         Adds a group
@@ -90,12 +90,12 @@ class SqliteBackend(BaseBackend):
         gr = self._group_exists(group)
         if gr[0]:
             return (False,"Group already exists %s "%(gr[1]))
-        
+
         #add the group
         self.session.add(Group(group))
         self._check_commit(save)
         return (True,'')
-    
+
     def add_host_to_group(self,group,host,save=True):
         """
         Adds a host to a group
@@ -106,9 +106,9 @@ class SqliteBackend(BaseBackend):
         except Exception,e:
             self._recreate_session()
             return (False,"The host is already in database %s : %s "%(host,e))
-        
+
         return (True,'')
-    
+
     def remove_group(self,group,save=True):
         """
         Removes a group
@@ -119,7 +119,7 @@ class SqliteBackend(BaseBackend):
             return group
         else:
             group = group[1]
-        
+
         self.session.delete(group)
         self._check_commit(save)
         return (True,'')
@@ -142,25 +142,25 @@ class SqliteBackend(BaseBackend):
         except Exception,e:
             #we dont have it so we can add it
             return (False,str(e))
-        
+
         self.session.delete(host_db)
         self._check_commit(save)
         return (True,"")
-    
+
     def save_changes(self):
         """
         Save the stuff that is in memory
         """
         self._check_commit()
 
-    
+
     def get_groups(self,pattern=None,exact=True,exclude=None):
         """
         Get a set of groups
-        
+
         @param pattern : You may request to get an exact host or
                          a one in proper pattern .
-        @param exact   : Related to pattern if you should do exact 
+        @param exact   : Related to pattern if you should do exact
                          matching or related one.
         @param exclude : A list to be excluded from final set
         """
@@ -180,7 +180,7 @@ class SqliteBackend(BaseBackend):
 
             else:
                 return [g.name for g in self.session.query(Group).filter_by(name=pattern).all()]
-    
+
         return []
 
     def get_hosts(self,pattern=None,group=None,exact=True,exclude=None):
@@ -189,7 +189,7 @@ class SqliteBackend(BaseBackend):
 
         @param pattern : You may request to get an exact host or
                          a one in proper pattern .
-        @param exact   : Related to pattern if you should do exact 
+        @param exact   : Related to pattern if you should do exact
                          matching or related one.
         @param exclude : A list to be excluded from final set
         """
@@ -220,7 +220,7 @@ class SqliteBackend(BaseBackend):
                     return [h.name for h in self.session.query(Host).filter(Host.name.like("".join(["%",pattern,"%"]))).filter_by(group_id=group.id).all()]
                 else:
                     return [h.name for h in self.session.query(Host).filter(Host.name.like("".join(["%",pattern,"%"]))).filter_by(group_id=group.id).filter(not_(Host.name.in_(exclude))).all()]
-        
+
         return []
     def _check_commit(self,commit=True):
         """
@@ -241,4 +241,3 @@ class SqliteBackend(BaseBackend):
                 return (False,"Not existing group name")
         except Exception,e:
             return (False,str(e))
-

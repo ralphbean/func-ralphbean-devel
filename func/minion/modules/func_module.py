@@ -25,14 +25,14 @@ from func import utils
 def log_all(fn):
     """
     That decorator will set a logger to a method
-    which will be associated with its job_id so 
+    which will be associated with its job_id so
     will log only during when it is running,cool:)
     """
     def wrapper(*args):
-        
+
         if utils.should_log(args):
             logger = LogFactory.get_instance(app_name=args[len(args)-1]['job_id'])
-            
+
             #remove job_id from it
             args = list(args)
             args.pop()
@@ -41,7 +41,7 @@ def log_all(fn):
 
         setattr(wrapper,"logger",logger)
         return fn(*args)
-    
+
     #a hack for get_arg_methods
     wrapper.overriden_args = inspect.getargspec(fn)
     try:
@@ -64,13 +64,13 @@ class DecorateLogMeta(type):
             if type(attribute) == FunctionType and not attributeName.startswith("_"):
                 attribute = log_all(attribute)
             newClassDict[attributeName] = attribute
-        
+
         return type.__new__(meta, classname, bases, newClassDict)
 
 
 
 class FuncModule(object):
-    
+
     __metaclass__ = DecorateLogMeta
     # the version is meant to
     version = "0.0.0"
@@ -162,7 +162,7 @@ class FuncModule(object):
         """
         tmp_arg_dict = self.register_method_args()
 
-        #if it is not implemeted then return empty stuff 
+        #if it is not implemeted then return empty stuff
         if not tmp_arg_dict:
             return {}
 
@@ -170,7 +170,7 @@ class FuncModule(object):
         for method in tmp_arg_dict.iterkeys():
             if not hasattr(self,method):
                 raise NonExistingMethodRegistered("%s is not in %s "%(method,self.__class__.__name__))
-        
+
         #create argument validation instance
         self.arg_comp = ArgCompatibility(tmp_arg_dict)
         #see if all registered arguments are there
@@ -179,7 +179,7 @@ class FuncModule(object):
         #see if the options that were used are OK..
         self.arg_comp.validate_all()
 
-        return tmp_arg_dict 
+        return tmp_arg_dict
 
     def register_method_args(self):
         """
@@ -193,7 +193,7 @@ class FuncModule(object):
 
         # to know they didnt implement it
         return {}
-    
+
     def grep(self,word):
         """
         An useful utility for searching a specified
@@ -221,6 +221,3 @@ def findout(fn):
         return {}
 
     return _fn_arg
-
-
-

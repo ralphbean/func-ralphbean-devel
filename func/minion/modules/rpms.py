@@ -23,7 +23,7 @@ class RpmModule(func_module.FuncModule):
         Returns information on all installed packages.
         By default, 'flatten' is passed in as True, which makes printouts very
         clean in diffs for use by func-inventory.  If you are writting another
-        software application, using flatten=False will prevent the need to 
+        software application, using flatten=False will prevent the need to
         parse the returns.
         """
         return self.glob('', flatten)
@@ -31,16 +31,16 @@ class RpmModule(func_module.FuncModule):
     def grep(self, word):
         """
         Grep some info from packages we got from
-        inventory especially 
+        inventory especially
         """
         results = {self.inventory:[]}
         inventory_res = self.inventory()
-        
+
         for res in inventory_res:
             if res.lower().find(word)!= -1:
                 results[self.inventory].append(res)
         return results
-        
+
     grep = func_module.findout(grep)
 
     def verify(self, pattern='', flatten=True):
@@ -58,7 +58,7 @@ class RpmModule(func_module.FuncModule):
                 for fn in errors.keys():
                     for prob in errors[fn]:
                         if flatten:
-                             results.append('%s %s %s' % (name, fn, prob.message))
+                            results.append('%s %s %s' % (name, fn, prob.message))
                         else:
                             results.append([name, fn, prob.message])
         return results

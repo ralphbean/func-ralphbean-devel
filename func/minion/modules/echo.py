@@ -40,30 +40,30 @@ class EchoTest(func_module.FuncModule):
         Run a list
         """
         return command
-    
-    
+
+
     def run_list_star(self,*command):
         """
         Run a star list :)
         """
         return command
 
-    
+
     def run_hash(self,command):
         """
         Run hash
         """
 
         return command
-    
-    
-  
+
+
+
     def run_boolean(self,command):
         """
         Run boolean
         """
         return command
-    
+
     def run_str_log(self,command):
         import time
 
@@ -74,7 +74,7 @@ class EchoTest(func_module.FuncModule):
             self.run_str_log.logger.info("Calling method with counter is %d"%i)
             #log the progress so other apps can poll for it
             self.run_str_log.logger.progress(i,50)
-        
+
         return command
 
     def register_method_args(self):
@@ -118,7 +118,7 @@ class EchoTest(func_module.FuncModule):
                             'type':'string',
                             'optional':False,
                             'options':['first_option','second_option','third_option']
-                            },   
+                            },
                     },
                     'description':'Getting the status of the service_name'
                     },
@@ -153,7 +153,7 @@ class EchoTest(func_module.FuncModule):
                         },
                     'description':'Returns back a hash'
                     },
-   
+
 
                 'run_boolean':{
                     'args':

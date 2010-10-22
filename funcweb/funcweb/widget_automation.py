@@ -1,4 +1,4 @@
-#the purpose of that module is to make widget automation 
+#the purpose of that module is to make widget automation
 #for registered minion modules so we dont hace to write
 #that same boring stuff for every added module !
 
@@ -30,7 +30,7 @@ class WidgetListFactory(object):
             'list':{
                 'type':"RepeatingFieldSet"},
             'list*':{
-                'type':"RepeatingFieldSet"} 
+                'type':"RepeatingFieldSet"}
             }
     #will contain the input widget created in that class
 
@@ -50,20 +50,20 @@ class WidgetListFactory(object):
         self.minion = minion
         self.module = module
         self.method = method
-    
+
     def __add_general_widget(self):
-        # a mirror var to show that these are same things 
+        # a mirror var to show that these are same things
         mirror_case = {'list*':'list'}
         #key is the argument_name and the argument are options
         for key,argument in self.__argument_dict.iteritems():
             #get the type of the argument
             current_type = argument['type']
-            
+
             act_special = False #if it has some special parameters
             #it should be passed to its specialized method,if it has
             #for example options in its key it should be shown as a
             #SingleSelectField not a TextFiled
-            
+
             for type_match in self.__convert_table[current_type].keys():
                 if type_match!='default_value' and argument.has_key(type_match):
                     act_special = True
@@ -108,16 +108,16 @@ class WidgetListFactory(object):
         @param : argument_name : the name of the argument also the name of the widget
         @return : Nothing
         """
-        
+
         #allittle bit difficult to follow but that structure does
         #temp_object = SingleSelectField() for example
-        
+
         temp_object = getattr(widgets,self.__convert_table[argument['type']]['options'])(options = argument['options'])
         self.__add_commons_to_object(temp_object,argument,argument_name)
         #add a new entry to final list
         self.__widget_list[argument_name]=temp_object
         del temp_object
-    
+
     def __add_specialized_hash(self,argument,argument_name):
         """
         Specialized option adder for hash, we need it to be diffferent
@@ -126,7 +126,7 @@ class WidgetListFactory(object):
         web UI. It uses the RepeatingFieldSet which is able to contain the
         other normal input widgets. It will have two fields (TextFields)
         one for key : keyfield and other for value : valuefield
-        Also the validator addition is a little bit different and should 
+        Also the validator addition is a little bit different and should
         be done in that method also ...
 
         @param : argument : the argument options,
@@ -140,7 +140,7 @@ class WidgetListFactory(object):
                     widgets.TextField(name="valuefield",label="Value Field")
                     ],
                 }
-        
+
         #create the RepeatingFieldSet object and add it to global list like you do for others
         temp_object = getattr(widgets,self.__convert_table[argument['type']]['type'])(**hash_repeat_data)
         #print temp_object.fields
@@ -149,17 +149,17 @@ class WidgetListFactory(object):
         #add a new entry to final list
         self.__widget_list[argument_name]=temp_object
         del temp_object
-    
+
 
 
 
     def __add_specialized_list(self,argument,argument_name):
         """
         Very similar to __add_specialized_hash except it has one field
-        that is repeated so that provides a dynamic numbers of fields into 
+        that is repeated so that provides a dynamic numbers of fields into
         the web UI.
-        
-        TODO : combine the 2 methods into a one generic they are very similar 
+
+        TODO : combine the 2 methods into a one generic they are very similar
         @param : argument : the argument options,
         @param : argument_name : the name of the argument also the name of the widget
         @return : Nothing
@@ -170,7 +170,7 @@ class WidgetListFactory(object):
                     widgets.TextField(name="listfield",label="List Field")
                     ],
                 }
-        
+
         #create the RepeatingFieldSet object and add it to global list like you do for others
         temp_object = getattr(widgets,self.__convert_table[argument['type']]['type'])(**list_repeat_data)
         #add the commno options
@@ -178,23 +178,23 @@ class WidgetListFactory(object):
         #add a new entry to final list
         self.__widget_list[argument_name]=temp_object
         del temp_object
- 
+
 
     def __add_commons_to_object(self,object,argument,argument_name):
         """
         As it was thought all input widgets have the same
         common parameters they take so that method will add
-        them to instantiated object for ex (TextField) if they 
+        them to instantiated object for ex (TextField) if they
         occur into the argument ...
 
         @param object : instantiated inputwidget object
         @param method argument to lookup {type:'int','max':12 ...}
         @return :None
         """
-        #firstly set the name of the argument 
+        #firstly set the name of the argument
         setattr(object,"name",argument_name)
         setattr(object,"label",pretty_label(argument_name))
-        
+
         #print "The argument name is :",argument_name
         #print "The argument options are :",argument
 
@@ -202,7 +202,7 @@ class WidgetListFactory(object):
             setattr(object,"default",argument["default"])
         if argument.has_key('description'):
             setattr(object,'help_text',argument['description'])
-    
+
     def get_widgetlist(self):
         """
         Return back a dictionay with argument_name : input_widget
@@ -222,7 +222,7 @@ class WidgetListFactory(object):
         #print self.__widget_list
         if len(self.__widget_list.keys())==0:
             self.__add_general_widget() #not very efficient
-    
+
         widget_list_object = widgets.WidgetsList()
         for name,input_widget in self.__widget_list.iteritems():
             #it is a list indeed
@@ -244,7 +244,7 @@ class RemoteFormAutomation(CoreWD):
 
     name = "Ajaxian Minion Submit Form"
 
-    template = """ 
+    template = """
     <div>
        ${for_widget.display(action='/funcweb/post_form')}
         <div id="loading"></div>
@@ -279,7 +279,7 @@ class RemoteFormFactory(object):
     and return back a RemoteForm the same as above
     just for testing
     """
-    #some values that may want to change later 
+    #some values that may want to change later
     name = "minion_form",
     update = "col5",
     before='getElement(\'loading\').innerHTML=toHTML(IMG({src:\'../funcweb/static/images/loading.gif\',width:\'100\',height:\'100\'}));',
@@ -292,7 +292,7 @@ class RemoteFormFactory(object):
         self.validator_schema = validator_schema
 
     def get_remote_form(self):
-        
+
         #print self.wlist_object
 
         return RemoteForm(
@@ -310,7 +310,7 @@ class RemoteFormFactory(object):
 #############################################################################################
 def pretty_label(name_to_label):
     """
-    Simple util method to show the labels better 
+    Simple util method to show the labels better
     without __ things and other ugly looking stuff
     """
     tmp = None

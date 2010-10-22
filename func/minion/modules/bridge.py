@@ -100,7 +100,7 @@ class Bridge(func_module.FuncModule):
                     if vifpattern.match(elements[0]) and listvif == False:
                         continue
                     retlist[curbr].append(elements[0])
-    
+
         return retlist
 
     def list_permanent(self):
@@ -163,7 +163,7 @@ class Bridge(func_module.FuncModule):
                         # is orphaned.
                         retlist[brname].append(ifname)
         return retlist
-    
+
     def add_bridge(self, brname):
         """
         Creates a bridge
@@ -196,7 +196,7 @@ class Bridge(func_module.FuncModule):
         netmask -- Netmask for this bridge (string)
         gateway -- Gateway address for this bridge (string)
         """
-        
+
         if brname not in self.options.ignorebridges:
             filename = "/etc/sysconfig/network-scripts/ifcfg-%s" % brname
             fp = open(filename, "w")
@@ -309,7 +309,7 @@ class Bridge(func_module.FuncModule):
         else:
             returncode = -1
         return returncode
-    
+
     def delete_interface(self, brname, ifname):
         """
         Deletes an interface from a bridge
@@ -389,7 +389,7 @@ class Bridge(func_module.FuncModule):
     def delete_all_interfaces_permanent(self, brname):
         """
         Permanently deletes all interfaces from a bridge
-        
+
         Keyword arguments:
         brname -- Bridge name (string, ex: "br0")
         """
@@ -556,4 +556,3 @@ class Bridge(func_module.FuncModule):
         """
 
         return self.updown_bridge(brname, 0)
-

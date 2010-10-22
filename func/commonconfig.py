@@ -27,7 +27,7 @@ class FuncdConfig(BaseConfig):
     listen_addr = Option('')
     listen_port = IntOption('51234')
     minion_name = Option('')
-    
+
     method_log_dir = Option("/var/log/func/methods/")
     use_certmaster = BoolOption(True)
     ca_file = Option('')
@@ -49,4 +49,3 @@ class OverlordConfig(BaseConfig):
     puppet_crl = Option('/var/lib/puppet/ssl/ca/ca_crl.pem')
     host_down_list = Option('/var/lib/func/hosts_down.lst')
     allow_unknown_minions = BoolOption(False)
-    

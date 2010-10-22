@@ -11,7 +11,7 @@
 ##
 
 class ArgCompatibility(object):
-    """ 
+    """
     That class is going to test if the module that was created by module
     writer if he/she obeys to the rules we put here
     """
@@ -42,7 +42,7 @@ class ArgCompatibility(object):
         @param : get_args_result : The dict with all method related info
         """
         self.__args_to_check = get_args_result
-        
+
         #what options does each of the basic_types have :
         self.__valid_args={
                 'int':('range','min','max',),
@@ -58,7 +58,7 @@ class ArgCompatibility(object):
     def _is_type_options_compatible(self,argument_dict):
         """
         Checks the method's argument_dict's options and looks inside
-        self.__valid_args to see if the used option is there 
+        self.__valid_args to see if the used option is there
 
         @param : argument_dict : current argument to check
         @return : True of raises IncompatibleTypesException
@@ -67,14 +67,14 @@ class ArgCompatibility(object):
         #did module writer add a key 'type'
         if not argument_dict.has_key('type') or not self.__valid_args.has_key(argument_dict['type']):
             raise IncompatibleTypesException("%s is not in valid options,possible ones are :%s"%(argument_dict['type'],str(self.__valid_args)))
-    
+
         #we need some specialization about if user has defined options
         #there is no need for using validator,min_lenght,max_length
         if argument_dict.has_key('options'):
             for arg_option in argument_dict.keys():
                 if arg_option!='options' and arg_option in self.__valid_args['string']:
                     raise IncompatibleTypesException('The options keyword should be used alone in a string cant be used with min_length,max_length,validator together')
-        
+
         #if range keyword is used into a int argument the others shouldnt be there
         if argument_dict.has_key('range'):
             if len(argument_dict['range'])!=2:
@@ -85,14 +85,14 @@ class ArgCompatibility(object):
             for arg_option in argument_dict.keys():
                 if arg_option!='range' and arg_option in self.__valid_args['int']:
                     raise IncompatibleTypesException('The options range should be used alone into a int argument')
-        
+
 
         # we will use it everytime so not make lookups
         the_type = argument_dict['type']
         from itertools import chain #may i use chain ?
 
         for key,value in argument_dict.iteritems():
-            
+
             if key == "type":
                 continue
             if key not in chain(self.__valid_args[the_type],self.__common_options):
@@ -103,20 +103,20 @@ class ArgCompatibility(object):
 
     def _is_basic_types_compatible(self,type_dict):
         """
-        Validates that if the types that were submitted with 
+        Validates that if the types that were submitted with
         get_method_args were compatible with our format above
         in __basic_types
 
-        @param : type_dict : The type to examine 
+        @param : type_dict : The type to examine
         @return : True or raise IncompatibleTypesException Exception
         """
         #print "The structure we got is %s:"%(type_dict)
         for key,value in type_dict.iteritems():
 
-            #do we have that type 
+            #do we have that type
             if not self.__basic_types.has_key(key):
                 raise IncompatibleTypesException("%s not in the basic_types"%key)
-    
+
             #if  type matches and dont match default
             #print "The key: %s its value %s and type %s"%(key,value,type(value))
             if key!='default' and type(value)!=type(self.__basic_types[key]):
@@ -128,19 +128,19 @@ class ArgCompatibility(object):
         """
         Method inspects the method arguments and checks if the user
         has registered all the arguments succesfully and also adds a
-        'order' keyword to method arguments to 
+        'order' keyword to method arguments to
         """
         import inspect
         from itertools import chain
         #get the arguments from real object we have [args],*arg,**kwarg,[defaults]
         #tmp_arguments=inspect.getargspec(getattr(cls,method_name))
-        
+
         #overriden args is something i created it is a hack !
         tmp_arguments = getattr(cls, method_name).overriden_args
         check_args=[arg for arg in chain(tmp_arguments[0],tmp_arguments[1:3]) if arg and arg!='self']
         #raise Exception("The check_args are like %s"%str(check_args))
-        #print "The arguments taken from the inspect are :",check_args 
-        #the size may change of the hash so should a copy of it 
+        #print "The arguments taken from the inspect are :",check_args
+        #the size may change of the hash so should a copy of it
         copy_arguments = arguments.copy()
         for compare_arg in copy_arguments.iterkeys():
             if not compare_arg in check_args:
@@ -155,18 +155,18 @@ class ArgCompatibility(object):
         """
         Validates the output for minion module's
         get_method_args method
-        
+
         The structure that is going to be validated is in that format :
-        
+
         {
         method_name1 : {'args':{...},
                       'description':"wowo"},
         method_name12 : {...}
         }
-        
+
         @return : True or raise IncompatibleTypesException Exception
         """
-        
+
         for method in self.__args_to_check.iterkeys():
             #here we got args or description part
             #check if user did submit something not in the __method_options
@@ -190,7 +190,7 @@ class ArgCompatibility(object):
 
 class IncompatibleTypesException(Exception):
     """
-    Raised when we assign some values that breaksour rules 
+    Raised when we assign some values that breaksour rules
     @see ArgCompatibility class for allowed situations
     """
     def __init__(self, value=None):
@@ -225,6 +225,6 @@ class NonExistingMethodRegistered(IncompatibleTypesException):
 class ArgumentRegistrationError(IncompatibleTypesException):
     """
     When user forgets to register soem of the arguments in the list
-    or adds some argument that is not there 
+    or adds some argument that is not there
     """
     pass

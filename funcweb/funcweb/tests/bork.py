@@ -33,5 +33,3 @@ while code_status != JOB_ID_FINISHED:
     code_status = fc.job_status(job_id)[0]
     time.sleep(2)
 print "The run_string was finished"
-
-

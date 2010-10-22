@@ -66,5 +66,3 @@ class OverlordModule(func_module.FuncModule):
                     'description':"Builds a recursive map of the minions currently assigned to this minion overlord"
                     }
                 }
-        
-    

@@ -26,13 +26,13 @@ class PackageKitInterface(PackageKit):
     def __init__(self):
         PackageKit.__init__(self)
         self.packages = []
-        
+
     def Percentage(self, progress):
         pass
-        
+
     def JobStatus(self, type):
         pass
-	
+
     def Package(self, package_name, package_summary):
         self.packages.append( {
             "name"    : "%s" % package_name,

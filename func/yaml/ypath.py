@@ -64,7 +64,7 @@ class context:
     def __setattr__(self,attname,attval):
         if attname in ('parent','key','value'):
             if self.__dict__.get(attname):
-                 raise ValueError("context is read-only")
+                raise ValueError("context is read-only")
         self.__dict__[attname] = attval
     def __hash__(self): return hash(self.path)
     def __cmp__(self,other):   
@@ -228,7 +228,7 @@ class match_seg(self_seg):
     def __init__(self,key):
         #TODO: Do better implicit typing
         try:
-           key = int(key)
+            key = int(key)
         except: pass
         self.key = key
     def bind(self,cntx):
@@ -327,7 +327,7 @@ class equal_pred:
             while 1:
                 cntx = self.rhs.next()
                 if str(cntx.value) == self.lhs:  #TODO: Remove type hack
-                     return 1
+                    return 1
         except StopIteration: pass
         return 0
     def exists_segment(self,cntx):

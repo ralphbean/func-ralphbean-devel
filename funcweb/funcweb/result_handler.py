@@ -12,7 +12,7 @@ def produce_res_rec(result_pack):
     if type(result_pack) != list and type(result_pack) != dict:
         global_max = global_max + 1
         return {'id':global_max,'text':str(result_pack)}
-    
+
     elif type(result_pack) == list :
         for result_list in result_pack:
             if type(result_list) == list:
@@ -47,9 +47,9 @@ def produce_res_rec(result_pack):
             tmp_parent = {}
             tmp_parent ['id'] = global_max
             tmp_parent ['text'] = str(key_result)
-           
+
             tmp_dict_res = produce_res_rec(value_result)
-                
+
             if tmp_dict_res and type(tmp_dict_res) == list :
                 tmp_parent ['item'] = []
                 tmp_parent['item'].extend(tmp_dict_res)
@@ -58,7 +58,7 @@ def produce_res_rec(result_pack):
                 tmp_parent['item'].append(tmp_dict_res)
 
             send_list.append(tmp_parent)
-    
+
     else: #shouldnt come here !
         return {}
 
@@ -66,20 +66,20 @@ def produce_res_rec(result_pack):
 
 if __name__ == "__main__":
     """
-      
-      
+
+
     main_pack = {
             'minion':[["one","two"],["three","four"]]
             }
-    
-    
-    
-    
-       
-    
-    
+
+
+
+
+
+
+
     main_pack = {
-            
+
                 'minion':{
                     'result1':True,
                     'result2':False
@@ -93,10 +93,10 @@ if __name__ == "__main__":
                     'result6':False
                     }
 
-        
+
             }
     """
-    
+
     main_pack = {
             'minion1':[
                 {
@@ -114,12 +114,10 @@ if __name__ == "__main__":
                     'res4':['wums','dums']
                     }
                 ]
- 
+
             }
 
 
     final = produce_res_rec(main_pack)
     print "The final pack is like that : "
     print final
-
-
