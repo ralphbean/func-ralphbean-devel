@@ -11,6 +11,8 @@ from func.utils import is_error
 
 def main(args):
     parser = base_func_parser(outputpath=False)
+    parser.add_option('--returncodes', action='store_true', help="prefix each line with the commands returncode")
+    parser.add_option('--oneline', action='store_true', help="output all things as one line - to make grepping easier, will not remove \n's from output of commands, though")
     opts, args, parser = parse_args(args)
     opts = handle_base_func_options(parser, opts)
 
@@ -37,13 +39,17 @@ def main(args):
             errorprint(msg)
             continue
 
-        # FIXME - maybe for commands don't do it one line with hostname first
+        if opts.oneline:
+            if opts.returncodes:
+                print '%s:%s:%s' % (hn, output[0], output[1])
+            else:
+                print '%s:%s' % (hn, output[1])
+        else:
+            if opts.returncodes:
+                print '%s:\nreturn code:%s\n%s' % (hn, output[0], output[1])
+            else:
+                print '%s:\n%s' % (hn, output[1])
 
-        print '%s' % hn
-        print output[1]
-        print ''
-    
-    return 0
     
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
