@@ -55,6 +55,8 @@ class Ping(base_command.BaseCommand):
         servers = minion_set.get_all_hosts()
 
         for server in servers:
+            if server in minion_set.downed_hosts:
+                continue
 
             overlord_obj = client.Overlord(server,
                                            interactive=False,
