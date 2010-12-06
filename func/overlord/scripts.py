@@ -44,5 +44,5 @@ def handle_base_func_options(parser, opts):
     return opts
 
 
-def errorprint(msg)
+def errorprint(msg):
     print >> sys.stderr, msg
