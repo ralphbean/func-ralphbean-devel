@@ -10,7 +10,7 @@ from func.utils import is_error
 
 def main(args):
     parser = base_func_parser(outputpath=False, timeoutdef=10)
-    opts, args, parser = parse_args(args)
+    opts, args = parser.parse_args(args)
     opts = handle_base_func_options(parser, opts)
 
 

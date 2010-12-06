@@ -13,7 +13,7 @@ def main(args):
     parser = base_func_parser(outputpath=False)
     parser.add_option('--returncodes', action='store_true', help="prefix each line with the commands returncode")
     parser.add_option('--oneline', action='store_true', help="output all things as one line - to make grepping easier, will not remove \n's from output of commands, though")
-    opts, args, parser = parse_args(args)
+    opts, args = parser.parse_args(args)
     opts = handle_base_func_options(parser, opts)
 
     if len(args) < 1:
