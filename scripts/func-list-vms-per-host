@@ -24,7 +24,7 @@ def parse_args(args):
             hosts = sys.stdin.readlines()
         else:
             hosts = open(opts.hostfile, 'r').readlines()
-        
+
         for hn in hosts:
             hn = hn.strip()
             if hn.startswith('#'):
@@ -49,18 +49,11 @@ for (hn, mods) in results.items():
         hosts_to_scan.append(hn)
 
 fc = func.overlord.client.Client(';'.join(hosts_to_scan), timeout=opts.timeout, nforks=len(hosts_to_scan))
-results = fc.virt.list_vms()
-vms_per_host = {}
+results = fc.virt.info()
 
-for (hn, vms) in results.items():
-    vms_per_host[hn] = []
-    for vm in vms:
+for (hn, vms) in sorted(results.items()):
+    for (vm, info) in sorted(vms.items()):
         if vm == 'Domain-0':
             continue
-        vms_per_host[hn].append(vm)
+        print '%s:%s:%s' % (hn, vm, info['state'])
 
-for hn in sorted(vms_per_host.keys()):
-    if vms_per_host[hn]:
-        for vm in sorted(vms_per_host[hn]):
-            print '%s:%s' % (hn, vm)
-        
