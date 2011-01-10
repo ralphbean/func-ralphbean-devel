@@ -1,9 +1,3 @@
-%if 0%{?rhel} == 3
-%define __python_ver 2.3
-%endif
-%define python python%{?__python_ver}
-%define __python /usr/bin/%{python}
-
 %{!?python_version: %define python_version %(%{__python} -c "from distutils.sysconfig import get_python_version; print get_python_version()")}
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
@@ -16,18 +10,13 @@ Release: 1%{?dist}
 Source0: %{name}-%{version}.tar.gz
 License: GPLv2+
 Group: Applications/System
-%if 0%{?rhel} == 3
-Requires: %{python}
-Requires: pyOpenSSL-py23
-%else
 Requires: python >= 2.3
 Requires: pyOpenSSL
-%endif
-Requires: %{python}-simplejson
+Requires: python-simplejson
 Requires: certmaster >= 0.27
 Requires: logrotate
 Requires: smolt
-BuildRequires: %{python}-devel
+BuildRequires: python-devel
 %if %is_suse
 BuildRequires: gettext-devel
 %else
@@ -48,9 +37,6 @@ func is a remote api for mangement, configuration, and monitoring of systems.
 
 %prep
 %setup -q
-%if 0%{?rhel} == 3
-%patch0 -p1
-%endif
 
 %build
 %{__python} setup.py build
