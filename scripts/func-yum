@@ -223,6 +223,15 @@ def _wait_for_async(fc, opts, jobid):
     
     return results
 
+def _confirm_on_change(basecmd, extcmds, hosts):
+    print 'Preparing to run: %s %s' % (basecmd, ' '.join(extcmds))
+    print 'Running on:\n  %s' % '\n  '.join(sorted(hosts))
+    try:
+        junk = raw_input('If not okay, ctrl-c now, else press enter now')
+    except KeyboardInterrupt, e:
+        print "\n\nExiting"
+        sys.exit(0)
+    
 def store_info(fc, opts):
     # retrieve info to outputpath/$hostname/installed/timestamp
    
@@ -491,6 +500,8 @@ def main(args):
         hosts, offline = filter_hosts(hosts, opts)
         
         fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=opts.forks, async=True)
+        _confirm_on_change(basecmd, extcmds, hosts)
+        
         errors = update(fc, opts, extcmds)
         for error in errors:
             errorprint('  %s' % error)
@@ -578,6 +589,7 @@ def main(args):
     elif basecmd == 'custom':
         hosts, offline = filter_hosts(hosts, opts)
         fc = fclient.Client(';'.join(hosts), timeout=opts.timeout, nforks=opts.forks)
+        _confirm_on_change(basecmd, extcmds, hosts)        
         errors = custom(fc, opts, extcmds)
         for error in errors:
             errorprint('  %s' % error)

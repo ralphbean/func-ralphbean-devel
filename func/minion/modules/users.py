@@ -67,9 +67,17 @@ class UsersModule(func_module.FuncModule):
             if elem == '':
                 pass
             else:
-                cmd = cmd + " '" + str(elem.replace("'","") if (type(elem) == str) else elem) + "'"
-#    print "\nCmd: [%s]"%cmd
-        return False if system(cmd+" 2>/dev/null 1>/dev/null") else True
+                if type(elem) == str:
+                    ret = str(elem.replace("'", ""))
+                else:
+                    ret = str(elem)
+                cmd = cmd + " '" + ret + "'"
+
+        if system(cmd+" 2>/dev/null 1>/dev/null"):
+            return False
+        else:
+            return True
+            
 
     def __plural(self,f):
         return (lambda xs: map(f,xs))
@@ -380,7 +388,8 @@ class UsersModule(func_module.FuncModule):
         """Lists all UIDs on the target system(s)."""
         uids = []
         for user in pwd.getpwall():
-            uids.append(user[2] if user[2] < 4294967294 else True)
+            if user[2] < 4294967294:
+                uids.append(user[2])
         return uids
 
     def uids_list(self):
@@ -402,7 +411,8 @@ class UsersModule(func_module.FuncModule):
         """Lists all GIDs on the target system(s)."""
         gids = []
         for group in grp.getgrall():
-            gids.append(group[2] if group[2] < 4294967294 else True)
+            if group[2] < 4294967294:
+                gids.append(group[2])
         return gids
 
     def gids_list(self):
